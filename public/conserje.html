@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conserjería Remota</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
+    .camera-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .camera-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 6px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.2s; }
+    .camera-card:hover { transform: scale(1.02); }
+    .alarm-active { border: 2px solid #ff5252; }
+    .log-entry { padding: 6px 10px; border-bottom: 1px solid #2a2a2a; font-size: 0.85rem; }
+    .log-entry.alarm { color: #ff6b6b; }
+    .log-entry.lock { color: #4ade80; }
+    .log-entry.info { color: #93c5fd; }
+    .log-entry.error { color: #f87171; }
+    #expandedView { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+    .expanded-card { background: #1e1e1e; padding: 16px; border-radius: 12px; width: 80%; max-width: 1000px; }
+    .tab-btn { padding: 8px 16px; background: #2d2d2d; border: none; color: #bbb; cursor: pointer; border-radius: 6px 6px 0 0; }
+    .tab-btn.active { background: #1e1e1e; color: white; font-weight: bold; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .grayscale { filter: grayscale(100%); }
+    .opacity-50 { opacity: 0.5; }
+  </style>
+</head>
+<body class="p-4">
+  <div id="expandedView" onclick="closeExpandedView()">
+    <div class="expanded-card" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="expandedTitle" class="text-xl font-bold"></h2>
+        <button onclick="closeExpandedView()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+      </div>
+      <div id="expandedVideoContainer" class="h-96 bg-black rounded-lg mb-4 flex items-center justify-center">
+        <video id="expandedVideo" autoplay playsinline class="w-full h-full object-contain"></video>
+        <span id="expandedVideoPlaceholder" class="text-gray-500">Vista en vivo de <span id="expandedCamName"></span></span>
+      </div>
+      <div id="expandedControls" class="flex justify-center gap-4">
+        <button id="expandedLockBtn" class="px-4 py-2 rounded font-medium"></button>
+        <button id="expandedFireBtn" class="text-orange-400 text-xl hover:text-orange-300" title="Alarma de incendio">🔥</button>
+        <button id="expandedSoundBtn" class="text-red-400 text-xl hover:text-red-300" title="Alarma sonora">🔊</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- Panel izquierdo: Cámara del conserje + Logs + Logout -->
+    <div class="w-full lg:w-80 flex flex-col gap-4">
+      <!-- Cerrar sesión -->
+      <div class="bg-gray-800 rounded-xl p-3 flex justify-between items-center">
+        <span class="text-sm font-semibold"> Sesión activa </span>
+        <button onclick="logout()" class="text-xs bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded">
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-3">
+        <h3 class="text-sm font-semibold mb-2 flex items-center">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+          Tu transmisión
+        </h3>
+        <video id="localVideo" autoplay muted playsinline class="w-full rounded-lg bg-black aspect-video"></video>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-3 flex-grow flex flex-col">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-semibold">Registro de Actividad</h3>
+          <button onclick="clearLogsUI()" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">
+            Limpiar vista
+          </button>
+        </div>
+        <div id="logContainer" class="text-xs overflow-y-auto flex-grow" style="max-height: 300px;">
+          <!-- Los logs se cargarán desde el servidor -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel derecho: Secciones y cámaras -->
+    <div class="flex-grow">
+      <h2 class="text-xl font-bold mb-2">Cámaras del Condominio</h2>
+      <div class="tabs" id="tabsContainer">
+        <!-- Se llenará dinámicamente -->
+      </div>
+      <div class="camera-grid" id="camerasGrid"></div>
+    </div>
+  </div>
+
+  <script>
+    // === AUTENTICACIÓN ===
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+
+    const socket = io({ auth: { token } });
+    const localVideo = document.getElementById('localVideo');
+    const camerasGrid = document.getElementById('camerasGrid');
+    const logContainer = document.getElementById('logContainer');
+    const expandedView = document.getElementById('expandedView');
+    const expandedTitle = document.getElementById('expandedTitle');
+    const expandedCamName = document.getElementById('expandedCamName');
+    const expandedLockBtn = document.getElementById('expandedLockBtn');
+    const expandedFireBtn = document.getElementById('expandedFireBtn');
+    const expandedSoundBtn = document.getElementById('expandedSoundBtn');
+    const expandedVideo = document.getElementById('expandedVideo');
+    const expandedVideoPlaceholder = document.getElementById('expandedVideoPlaceholder');
+    const expandedVideoContainer = document.getElementById('expandedVideoContainer');
+
+    let currentExpandedCam = null;
+    let devicesState = {};
+    let currentSection = 'all';
+    let SECTIONS = {};
+    let CAMERAS_CONFIG = {};
+    let cameraStatus = {};
+    let janusStreams = [];
+
+    // Cargar configuración desde el backend
+    fetch('/api/config', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      CAMERAS_CONFIG = data.sections;
+      SECTIONS = {};
+      data.sections.forEach(section => {
+        SECTIONS[section.key] = {
+          name: section.name,
+          range: section.range
+        };
+      });
+      renderTabs();
+      renderCameras(devicesState);
+    })
+    .catch(err => {
+      console.error('Error al cargar configuración:', err);
+      alert('Error al cargar configuración del sistema');
+    });
+
+    // Cargar streams de Janus
+    fetch('/api/janus-streams', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      janusStreams = data.streams;
+      console.log('Streams de Janus cargados:', janusStreams);
+    })
+    .catch(err => {
+      console.error('Error al cargar streams de Janus:', err);
+    });
+
+    // Renderizar pestañas dinámicamente
+    function renderTabs() {
+      const container = document.getElementById('tabsContainer');
+      container.innerHTML = '';
+
+      CAMERAS_CONFIG.forEach(section => {
+        const start = section.range[0];
+        const end = section.range[1];
+        const count = end - start + 1;
+
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${section.key === 'all' ? 'active' : ''}`;
+        btn.dataset.section = section.key;
+        btn.textContent = `${section.name} (${count})`;
+        btn.title = section.description;
+
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSection = btn.dataset.section;
+          renderCameras(devicesState);
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function logout() {
+      if (confirm('¿Deseas cerrar sesión?')) {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+      }
+    }
+
+    // === BOTÓN LIMPIAR VISTA ===
+    function clearLogsUI() {
+      if (confirm('¿Limpiar la vista del registro? (Los datos reales se mantienen)')) {
+        logContainer.innerHTML = '<div class="log-entry info">Registro limpiado</div>';
+      }
+    }
+
+    // === LOGS PERSISTENTES ===
+    function addLogFromServer(logLine) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry info';
+      
+      if (logLine.includes('🚨')) {
+        entry.className = 'log-entry alarm';
+      } else if (logLine.includes('🔒') || logLine.includes('🔑')) {
+        entry.className = 'log-entry lock';
+      } else if (logLine.includes('⚠️')) {
+        entry.className = 'log-entry error';
+      }
+      
+      const match = logLine.match(/\[(.*?)\]/);
+      const time = match ? match[1] : '—';
+      const message = logLine.replace(/\[.*?\]\s*/, '');
+      
+      entry.textContent = `[${time}] ${message}`;
+      
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    socket.on('initial-logs', (logs) => {
+      logContainer.innerHTML = '';
+      logs.forEach(logLine => addLogFromServer(logLine));
+      if (logs.length === 0) {
+        logContainer.innerHTML = '<div class="log-entry info">Sistema iniciado</div>';
+      }
+    });
+
+    socket.on('new-log', (logLine) => {
+      addLogFromServer(logLine);
+    });
+
+    // === ESTADO DE CÁMARAS OFFLINE ===
+    socket.on('camera-status', (status) => {
+      Object.assign(cameraStatus, status);
+      renderCameras(devicesState);
+    });
+
+    // === STREAMS DE JANUS ===
+    socket.on('janus-streams', (streams) => {
+      janusStreams = streams;
+      console.log('Streams de Janus recibidos:', janusStreams);
+    });
+
+    // === ERRORES DEL SERVIDOR ===
+    socket.on('error', (data) => {
+      addLogFromServer(`[${new Date().toLocaleTimeString()}] ${data.message}`);
+    });
+
+    // === CÁMARA DEL CONSERJE ===
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => localVideo.srcObject = stream)
+      .catch(() => {
+        localVideo.parentElement.innerHTML = '<div class="text-red-400 text-sm">Cámara no disponible</div>';
+      });
+
+    // === RENDERIZAR CÁMARAS ===
+    function getCamerasInSection(sectionKey) {
+      const { range } = SECTIONS[sectionKey];
+      const [start, end] = range;
+      const camIds = [];
+      for (let i = start; i <= end; i++) {
+        camIds.push(`cam${i}`);
+      }
+      return camIds;
+    }
+
+    function renderCameras(devices) {
+      if (!devices || Object.keys(SECTIONS).length === 0) return;
+      devicesState = devices;
+      const camIds = getCamerasInSection(currentSection);
+      camerasGrid.innerHTML = '';
+      camIds.forEach(camId => {
+        const cam = devices[camId];
+        if (!cam) return;
+
+        // Estado de conexión
+        const isOnline = cameraStatus[camId]?.online !== false;
+        const hasAlarm = cam.fireAlarm || cam.soundAlarm;
+        const offlineClass = isOnline ? '' : 'opacity-50 grayscale';
+        const offlineText = isOnline ? 'Vista en vivo' : 'Cámara offline';
+
+        const card = document.createElement('div');
+        card.className = `camera-card ${hasAlarm ? 'alarm-active' : ''}`;
+        card.innerHTML = `
+          <div class="p-2 text-center font-bold text-xs bg-gray-800">${camId}</div>
+          <div class="h-24 bg-black flex items-center justify-center text-gray-500 text-xs ${offlineClass}">
+            ${offlineText}
+          </div>
+          <div class="p-2 flex justify-between items-center">
+            <button onclick="event.stopPropagation(); toggleLock('${camId}', ${!cam.lock})"
+              class="text-xs px-2 py-1 rounded ${cam.lock ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white ${isOnline ? '' : 'opacity-50 cursor-not-allowed'}" 
+              ${isOnline ? '' : 'disabled'}>
+              ${cam.lock ? '🔓 Abrir' : '🔒 Cerrar'}
+            </button>
+            <div class="flex space-x-1">
+              <button onclick="event.stopPropagation(); triggerAlarm('${camId}', 'fire')" 
+                class="text-orange-400 hover:text-orange-300 text-base ${isOnline ? '' : 'opacity-50'}" 
+                ${isOnline ? '' : 'disabled'}>🔥</button>
+              <button onclick="event.stopPropagation(); triggerAlarm('${camId}', 'sound')" 
+                class="text-red-400 hover:text-red-300 text-base ${isOnline ? '' : 'opacity-50'}" 
+                ${isOnline ? '' : 'disabled'}>🔊</button>
+            </div>
+          </div>
+        `;
+        card.onclick = () => expandCamera(camId);
+        camerasGrid.appendChild(card);
+      });
+
+      if (currentExpandedCam && devices[currentExpandedCam]) {
+        updateExpandedView(devices[currentExpandedCam]);
+      }
+    }
+
+    // === VISTA EXPANDIDA ===
+    function expandCamera(camId) {
+      currentExpandedCam = camId;
+      updateExpandedView(devicesState[camId]);
+      
+      // Mostrar video si es una cámara Janus
+      const janusStream = janusStreams.find(s => s.id === camId);
+      if (janusStream) {
+        startWebRTCForCamera(camId);
+      }
+      
+      expandedView.style.display = 'flex';
+    }
+
+    function updateExpandedView(cam) {
+      if (!cam) return;
+      const camId = currentExpandedCam;
+      expandedTitle.textContent = `Cámara: ${camId.toUpperCase()}`;
+      expandedCamName.textContent = camId;
+      expandedLockBtn.textContent = cam.lock ? '🔓 Abrir cerradura' : '🔒 Cerrar cerradura';
+      expandedLockBtn.className = `px-4 py-2 rounded font-medium ${cam.lock ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white`;
+      expandedLockBtn.onclick = () => {
+        const newState = !cam.lock;
+        socket.emit('toggle-lock', { camId, state: newState });
+      };
+      expandedFireBtn.onclick = () => triggerAlarm(camId, 'fire');
+      expandedSoundBtn.onclick = () => triggerAlarm(camId, 'sound');
+    }
+
+    function closeExpandedView() {
+      expandedView.style.display = 'none';
+      currentExpandedCam = null;
+      // Detener video si estaba reproduciéndose
+      expandedVideo.srcObject = null;
+      expandedVideoPlaceholder.style.display = 'block';
+    }
+
+    // === WebRTC para cámara expandida ===
+    let peerConnections = {};
+
+    async function startWebRTCForCamera(camId) {
+      try {
+        // Obtener configuración WebRTC del backend
+        const res = await fetch('/api/webrtc-config', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const webrtcConfig = await res.json();
+
+        // Crear PeerConnection
+        const pc = new RTCPeerConnection(webrtcConfig);
+        peerConnections[camId] = pc;
+
+        // Escuchar candidatos ICE
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.emit('webrtc-ice-candidate', { camId, candidate: event.candidate });
+          }
+        };
+
+        // Escuchar estado de conexión
+        pc.onconnectionstatechange = () => {
+          console.log(`Estado de conexión WebRTC para ${camId}:`, pc.connectionState);
+        };
+
+        // Escuchar track remoto (video de Janus)
+        pc.ontrack = (event) => {
+          expandedVideo.srcObject = event.streams[0];
+          expandedVideoPlaceholder.style.display = 'none';
+        };
+
+        // Crear oferta
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('webrtc-offer', { camId, offer });
+
+      } catch (err) {
+        console.error('Error al iniciar WebRTC:', err);
+      }
+    }
+
+    // Escuchar oferta del servidor Janus
+    socket.on('webrtc-offer', (data) => {
+      const pc = peerConnections[data.camId];
+      if (pc) {
+        pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        // Crear respuesta
+        pc.createAnswer()
+          .then(answer => {
+            pc.setLocalDescription(answer);
+            socket.emit('webrtc-answer', { camId: data.camId, answer });
+          });
+      }
+    });
+
+    // Escuchar respuesta del servidor Janus
+    socket.on('webrtc-answer', (data) => {
+      const pc = peerConnections[data.camId];
+      if (pc && !pc.remoteDescription) {
+        pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+      }
+    });
+
+    // Escuchar candidatos ICE
+    socket.on('webrtc-ice-candidate', (data) => {
+      const pc = peerConnections[data.camId];
+      if (pc) {
+        pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+      }
+    });
+
+    window.toggleLock = (camId, state) => {
+      socket.emit('toggle-lock', { camId, state });
+    };
+
+    window.triggerAlarm = (camId, type) => {
+      if (confirm(`¿Activar alarma ${type === 'fire' ? 'de incendio' : 'sonora'} en ${camId}?`)) {
+        socket.emit('trigger-alarm', { camId, type });
+      }
+    };
+
+    socket.on('devices-update', renderCameras);
+    socket.on('alarm-triggered', ({ camId, type }) => {
+      // Ya se loguea en el backend
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeExpandedView();
+    });
+
+    socket.on('connect_error', (err) => {
+      if (err.message === 'Token inválido' || err.message === 'No token') {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+      }
+    });
+  </script>
+</body>
+</html>

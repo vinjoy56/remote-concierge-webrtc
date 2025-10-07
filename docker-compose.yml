@@ -1,0 +1,15 @@
+services:
+  janus:
+    image: 'meetecho/janus-gateway:latest' # Imagen oficial
+    container_name: janus-gateway
+    ports:
+      - '8188:8188'          # WebSocket
+      - '8088:8088'          # HTTP
+      - '8089:8089'          # Admin
+      - '8000-8200:8000-8200/udp'  # WebRTC
+    volumes:
+      - './janus.cfg:/opt/janus/etc/janus/janus.cfg:ro'
+      - './janus.plugin.streaming.cfg:/opt/janus/etc/janus/janus.plugin.streaming.cfg:ro'
+    environment:
+      - JANUS_DEBUG=0
+    restart: unless-stopped

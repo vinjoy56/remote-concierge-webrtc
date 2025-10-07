@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Conserjería</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { background-color: #121212; color: #e0e0e0; }</style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  <div class="bg-gray-800 p-8 rounded-xl w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-6 text-center">🔐 Acceso al Sistema</h1>
+    <form id="loginForm">
+      <div class="mb-4">
+        <label class="block text-sm mb-2">Usuario</label>
+        <input type="text" id="username" class="w-full p-2 rounded bg-gray-700 border border-gray-600" value="concierge" required />
+      </div>
+      <div class="mb-6">
+        <label class="block text-sm mb-2">Contraseña</label>
+        <input type="password" id="password" class="w-full p-2 rounded bg-gray-700 border border-gray-600" value="password123" required />
+      </div>
+      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-medium">
+        Iniciar Sesión
+      </button>
+      <p id="error" class="text-red-400 text-sm mt-3 text-center"></p>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const error = document.getElementById('error');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          window.location.href = '/conserje.html';
+        } else {
+          error.textContent = data.message || 'Credenciales incorrectas';
+        }
+      } catch (err) {
+        error.textContent = 'Error de conexión';
+      }
+    });
+  </script>
+</body>
+</html>

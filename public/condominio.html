@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pantalla del Condominio</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    #conserjeVideo {
+      max-width: 95vw;
+      max-height: 90vh;
+      border: 3px solid #333;
+      border-radius: 8px;
+    }
+    .label {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="label">📡 Conserjería Remota</div>
+  <video id="conserjeVideo" autoplay playsinline muted></video>
+
+  <script>
+    // Conectar a Socket.IO
+    const socket = io();
+
+    // Simular recepción de video del conserje
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        document.getElementById('conserjeVideo').srcObject = stream;
+      })
+      .catch(() => {
+        document.body.innerHTML = '<div style="font-size:24px;color:#ff5252;text-align:center;">❌ Sin conexión con la conserjería</div>';
+      });
+
+    // Escuchar mensajes del conserje
+    socket.on('message-from-concierge', (data) => {
+      console.log('Mensaje del conserje:', data);
+      // Aquí iría la lógica para mostrar notificaciones o interactuar
+    });
+  </script>
+</body>
+</html>
