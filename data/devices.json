@@ -1,0 +1,392 @@
+{
+  "cam1": {
+    "id": "cam1",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam2": {
+    "id": "cam2",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam3": {
+    "id": "cam3",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam4": {
+    "id": "cam4",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam5": {
+    "id": "cam5",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam6": {
+    "id": "cam6",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam7": {
+    "id": "cam7",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam8": {
+    "id": "cam8",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam9": {
+    "id": "cam9",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam10": {
+    "id": "cam10",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam11": {
+    "id": "cam11",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam12": {
+    "id": "cam12",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam13": {
+    "id": "cam13",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam14": {
+    "id": "cam14",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam15": {
+    "id": "cam15",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam16": {
+    "id": "cam16",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam17": {
+    "id": "cam17",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam18": {
+    "id": "cam18",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam19": {
+    "id": "cam19",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam20": {
+    "id": "cam20",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam21": {
+    "id": "cam21",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam22": {
+    "id": "cam22",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam23": {
+    "id": "cam23",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam24": {
+    "id": "cam24",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam25": {
+    "id": "cam25",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam26": {
+    "id": "cam26",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam27": {
+    "id": "cam27",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam28": {
+    "id": "cam28",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam29": {
+    "id": "cam29",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam30": {
+    "id": "cam30",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam31": {
+    "id": "cam31",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam32": {
+    "id": "cam32",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam33": {
+    "id": "cam33",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam34": {
+    "id": "cam34",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam35": {
+    "id": "cam35",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam36": {
+    "id": "cam36",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam37": {
+    "id": "cam37",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam38": {
+    "id": "cam38",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam39": {
+    "id": "cam39",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam40": {
+    "id": "cam40",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam41": {
+    "id": "cam41",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam42": {
+    "id": "cam42",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam43": {
+    "id": "cam43",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam44": {
+    "id": "cam44",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam45": {
+    "id": "cam45",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam46": {
+    "id": "cam46",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam47": {
+    "id": "cam47",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam48": {
+    "id": "cam48",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam49": {
+    "id": "cam49",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam50": {
+    "id": "cam50",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam51": {
+    "id": "cam51",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam52": {
+    "id": "cam52",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam53": {
+    "id": "cam53",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam54": {
+    "id": "cam54",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam55": {
+    "id": "cam55",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam56": {
+    "id": "cam56",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam57": {
+    "id": "cam57",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam58": {
+    "id": "cam58",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam59": {
+    "id": "cam59",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam60": {
+    "id": "cam60",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam61": {
+    "id": "cam61",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam62": {
+    "id": "cam62",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam63": {
+    "id": "cam63",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam64": {
+    "id": "cam64",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  },
+  "cam65": {
+    "id": "cam65",
+    "lock": false,
+    "fireAlarm": false,
+    "soundAlarm": false
+  }
+}

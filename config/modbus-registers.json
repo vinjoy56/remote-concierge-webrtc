@@ -1,0 +1,317 @@
+{
+    "holding_registers": {
+        "_comment_generator": "=== GENERATOR / MAINS ELECTRICAL ===",
+        "generator_state": {
+            "address": 1000,
+            "type": "uint16",
+            "description": "0=Off, 1=Starting, 2=Running"
+        },
+        "transfer_state": {
+            "address": 1001,
+            "type": "uint16",
+            "description": "0=On Generator, 1=On Mains"
+        },
+        "mains_voltage_l1": {
+            "address": 1100,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V",
+            "description": "Mains voltage phase L1"
+        },
+        "mains_voltage_l2": {
+            "address": 1101,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V"
+        },
+        "mains_voltage_l3": {
+            "address": 1102,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V"
+        },
+        "mains_frequency": {
+            "address": 1110,
+            "type": "uint16",
+            "scale": 0.01,
+            "unit": "Hz",
+            "description": "Mains frequency"
+        },
+        "gen_voltage_l1": {
+            "address": 1200,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V",
+            "description": "Generator voltage phase L1"
+        },
+        "gen_voltage_l2": {
+            "address": 1201,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V"
+        },
+        "gen_voltage_l3": {
+            "address": 1202,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V"
+        },
+        "gen_frequency": {
+            "address": 1210,
+            "type": "uint16",
+            "scale": 0.01,
+            "unit": "Hz",
+            "description": "Generator frequency"
+        },
+        "engine_temp": {
+            "address": 1300,
+            "type": "int16",
+            "scale": 1,
+            "unit": "°C",
+            "description": "Engine coolant temperature"
+        },
+        "oil_pressure": {
+            "address": 1310,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "bar",
+            "description": "Engine oil pressure"
+        },
+        "fuel_level": {
+            "address": 1320,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "%",
+            "description": "Fuel tank level percentage"
+        },
+        "battery_voltage": {
+            "address": 1330,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "V",
+            "description": "Battery voltage"
+        },
+        "engine_hours_low": {
+            "address": 1400,
+            "type": "uint16",
+            "description": "Engine running hours (low word)"
+        },
+        "engine_hours_high": {
+            "address": 1401,
+            "type": "uint16",
+            "description": "Engine running hours (high word)"
+        },
+        "generator_starts": {
+            "address": 1410,
+            "type": "uint16",
+            "description": "Number of generator starts"
+        },
+        "_comment_hydraulic": "=== HYDRAULIC SYSTEM ===",
+        "water_tank_a_level": {
+            "address": 2100,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "%",
+            "description": "Water tank A level percentage"
+        },
+        "water_tank_b_level": {
+            "address": 2101,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "%",
+            "description": "Water tank B level percentage"
+        },
+        "pump_torre_a_pressure": {
+            "address": 2110,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "bar",
+            "description": "Pump pressure Torre A"
+        },
+        "pump_torre_b_pressure": {
+            "address": 2111,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "bar",
+            "description": "Pump pressure Torre B"
+        },
+        "pump_b1_state": {
+            "address": 2120,
+            "type": "uint16",
+            "description": "Pump B1 state (0=Off, 1=On, 2=Standby)"
+        },
+        "pump_b2_state": {
+            "address": 2121,
+            "type": "uint16",
+            "description": "Pump B2 state"
+        },
+        "water_flow_rate": {
+            "address": 2130,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "L/min",
+            "description": "Common areas water flow rate"
+        },
+        "water_consumed_today": {
+            "address": 2140,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "L",
+            "description": "Water consumed today"
+        },
+        "_comment_pool": "=== POOL MONITORING ===",
+        "pool_temperature": {
+            "address": 2200,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "°C",
+            "description": "Pool water temperature"
+        },
+        "pool_ph": {
+            "address": 2210,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "pH",
+            "description": "Pool pH level"
+        },
+        "pool_chlorine": {
+            "address": 2220,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "ppm",
+            "description": "Pool chlorine level"
+        },
+        "pool_pump_state": {
+            "address": 2230,
+            "type": "uint16",
+            "description": "Pool pump state (0=Off, 1=On)"
+        },
+        "_comment_climate": "=== CLIMATE SENSORS ===",
+        "temp_exterior": {
+            "address": 2300,
+            "type": "int16",
+            "scale": 1,
+            "unit": "°C",
+            "description": "Exterior temperature"
+        },
+        "temp_interior_hall": {
+            "address": 2301,
+            "type": "int16",
+            "scale": 1,
+            "unit": "°C",
+            "description": "Interior temperature (Hall)"
+        },
+        "air_quality_index": {
+            "address": 2310,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "ICA",
+            "description": "Indoor Air Quality index"
+        },
+        "_comment_electric": "=== ELECTRICAL CONSUMPTION ===",
+        "power_comunidad": {
+            "address": 2400,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "kW",
+            "description": "Common areas power consumption"
+        },
+        "power_torre_a": {
+            "address": 2410,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "kW",
+            "description": "Torre A power consumption"
+        },
+        "power_torre_b": {
+            "address": 2420,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "kW",
+            "description": "Torre B power consumption"
+        },
+        "_comment_fence": "=== ELECTRIC FENCE ===",
+        "fence_voltage": {
+            "address": 2500,
+            "type": "uint16",
+            "scale": 1,
+            "unit": "V",
+            "description": "Electric fence voltage"
+        },
+        "fence_status": {
+            "address": 2501,
+            "type": "uint16",
+            "description": "Fence status (0=Off, 1=Normal, 2=Alarm)"
+        },
+        "_comment_ac_drive": "=== AC DRIVE (VFD) INFO ===",
+        "vfd_frequency": {
+            "address": 2600,
+            "type": "uint16",
+            "scale": 0.01,
+            "unit": "Hz",
+            "description": "VFD output frequency"
+        },
+        "vfd_current": {
+            "address": 2610,
+            "type": "uint16",
+            "scale": 0.1,
+            "unit": "A",
+            "description": "VFD output current"
+        },
+        "vfd_status": {
+            "address": 2620,
+            "type": "uint16",
+            "description": "VFD status (0=Stopped, 1=Running, 2=Fault)"
+        },
+        "_comment_alarms": "=== ALARMS & SMOKE DETECTORS ===",
+        "smoke_zone_1": {
+            "address": 3000,
+            "type": "uint16",
+            "description": "Smoke detector zone 1 (Hall): 0=Normal, 1=Alarm"
+        },
+        "smoke_zone_2": {
+            "address": 3001,
+            "type": "uint16",
+            "description": "Smoke detector zone 2 (Cocina): 0=Normal, 1=Alarm"
+        },
+        "smoke_zone_3": {
+            "address": 3002,
+            "type": "uint16",
+            "description": "Smoke detector zone 3 (Pasillo 1): 0=Normal, 1=Alarm"
+        },
+        "smoke_zone_4": {
+            "address": 3003,
+            "type": "uint16",
+            "description": "Smoke detector zone 4 (Pasillo 2): 0=Normal, 1=Alarm"
+        },
+        "smoke_zone_5": {
+            "address": 3004,
+            "type": "uint16",
+            "description": "Smoke detector zone 5 (Sala Eléctrica): 0=Normal, 1=Alarm"
+        },
+        "smoke_zone_6": {
+            "address": 3005,
+            "type": "uint16",
+            "description": "Smoke detector zone 6 (Bodega): 0=Normal, 1=Alarm"
+        },
+        "active_alarms": {
+            "address": 3100,
+            "type": "bitfield",
+            "description": "General alarms bitmap"
+        }
+    },
+    "alarm_bits": {
+        "0": "Mains failure",
+        "1": "Low fuel",
+        "2": "High engine temperature",
+        "3": "Low oil pressure",
+        "4": "Generator overload",
+        "5": "Battery low",
+        "6": "Emergency stop activated",
+        "7": "Communication fault",
+        "8": "Water tank low",
+        "9": "Pool chemical alert",
+        "10": "High water consumption",
+        "11": "Pump failure"
+    }
+}

@@ -1,0 +1,66 @@
+ffmpeg version 8.0.1-full_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 15.2.0 (Rev8, Built by MSYS2 project)
+  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-lcms2 --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-libsnappy --enable-zlib --enable-librist --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-sdl2 --enable-libaribb24 --enable-libaribcaption --enable-libdav1d --enable-libdavs2 --enable-libopenjpeg --enable-libquirc --enable-libuavs3d --enable-libxevd --enable-libzvbi --enable-liboapv --enable-libqrencode --enable-librav1e --enable-libsvtav1 --enable-libvvenc --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxeve --enable-libxvid --enable-libaom --enable-libjxl --enable-libvpx --enable-mediafoundation --enable-libass --enable-frei0r --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-liblensfun --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libshaderc --enable-vulkan --enable-libplacebo --enable-opencl --enable-libcdio --enable-openal --enable-libgme --enable-libmodplug --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libshine --enable-libtheora --enable-libtwolame --enable-libvo-amrwbenc --enable-libcodec2 --enable-libilbc --enable-libgsm --enable-liblc3 --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint --enable-whisper
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+Splitting the commandline.
+Reading option '-y' ... matched as option 'y' (overwrite output files) with argument '1'.
+Reading option '-loglevel' ... matched as option 'loglevel' (set logging level) with argument 'debug'.
+Reading option '-rtsp_transport' ... matched as AVOption 'rtsp_transport' with argument 'tcp'.
+Reading option '-i' ... matched as input url with argument 'rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1'.
+Reading option '-vf' ... matched as option 'vf' (alias for -filter:v (apply filters to video streams)) with argument 'scale=640:360,fps=15'.
+Reading option '-c:v' ... matched as option 'c' (select encoder/decoder ('copy' to copy stream without reencoding)) with argument 'libx264'.
+Reading option '-preset' ... matched as AVOption 'preset' with argument 'ultrafast'.
+Reading option '-tune' ... matched as AVOption 'tune' with argument 'zerolatency'.
+Reading option '-profile:v' ... matched as option 'profile' (set profile) with argument 'baseline'.
+Reading option '-pix_fmt' ... matched as option 'pix_fmt' (set pixel format) with argument 'yuv420p'.
+Reading option '-g' ... matched as AVOption 'g' with argument '15'.
+Reading option '-an' ... matched as option 'an' (disable audio) with argument '1'.
+Reading option '-f' ... matched as option 'f' (force container format (auto-detected otherwise)) with argument 'rtsp'.
+Reading option '-rtsp_transport' ... matched as AVOption 'rtsp_transport' with argument 'tcp'.
+Reading option 'rtsp://127.0.0.1:8554/cam1' ... matched as output url.
+Finished splitting the commandline.
+Parsing a group of options: global .
+Applying option y (overwrite output files) with argument 1.
+Applying option loglevel (set logging level) with argument debug.
+Successfully parsed a group of options.
+Parsing a group of options: input url rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1.
+Successfully parsed a group of options.
+Opening an input file: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1.
+[tcp @ 0000018c273f6f00] No default whitelist set
+[tcp @ 0000018c273f6f00] Original list of addresses:
+[tcp @ 0000018c273f6f00] Address 192.168.0.100 port 554
+[tcp @ 0000018c273f6f00] Interleaved list of addresses:
+[tcp @ 0000018c273f6f00] Address 192.168.0.100 port 554
+[tcp @ 0000018c273f6f00] Starting connection attempt to 192.168.0.100 port 554
+[tcp @ 0000018c273f6f00] Successfully connected to 192.168.0.100 port 554
+[rtsp @ 0000018c273f6bc0] SDP:
+v=0
+o=- 1109162014219182 0 IN IP4 0.0.0.0
+s=HIK Media Server V4.71.131
+i=HIK Media Server Session Description : standard
+e=NONE
+c=IN IP4 0.0.0.0
+t=0 0
+a=control:*
+b=AS:4106
+a=range:npt=now-
+m=video 0 RTP/AVP 96
+i=Video Media
+a=rtpmap:96 H264/90000
+a=fmtp:96 profile-level-id=4D0014;packetization-mode=0
+a=control:trackID=video
+b=AS:4096
+a=Media_header:MEDIAINFO=494D4B48020100000400000100000000000000000000000000000000000000000000000000000000;
+a=appversion:1.0
+
+[rtsp @ 0000018c273f6bc0] video codec set to: h264
+[rtsp @ 0000018c273f6bc0] RTP Profile IDC: 4d Profile IOP: 0 Level: 14
+[rtsp @ 0000018c273f6bc0] RTP Packetization Mode: 0
+[rtsp @ 0000018c273f6bc0] setting jitter buffer size to 0
+[rtsp @ 0000018c273f6bc0] hello state=0

@@ -1,0 +1,302 @@
+{
+  "NVR #1": [
+    {
+      "channel": 1,
+      "stream_id": "101",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/101"
+    },
+    {
+      "channel": 2,
+      "stream_id": "201",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/201"
+    },
+    {
+      "channel": 3,
+      "stream_id": "301",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/301"
+    },
+    {
+      "channel": 4,
+      "stream_id": "401",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/401"
+    },
+    {
+      "channel": 5,
+      "stream_id": "501",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/501"
+    },
+    {
+      "channel": 6,
+      "stream_id": "601",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/601"
+    },
+    {
+      "channel": 7,
+      "stream_id": "701",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/701"
+    },
+    {
+      "channel": 8,
+      "stream_id": "801",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/801"
+    },
+    {
+      "channel": 9,
+      "stream_id": "901",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/901"
+    },
+    {
+      "channel": 10,
+      "stream_id": "1001",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1001"
+    },
+    {
+      "channel": 11,
+      "stream_id": "1101",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1101"
+    },
+    {
+      "channel": 12,
+      "stream_id": "1201",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1201"
+    },
+    {
+      "channel": 13,
+      "stream_id": "1301",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1301"
+    },
+    {
+      "channel": 14,
+      "stream_id": "1401",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1401"
+    },
+    {
+      "channel": 15,
+      "stream_id": "1501",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1501"
+    },
+    {
+      "channel": 16,
+      "stream_id": "1601",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1601"
+    },
+    {
+      "channel": 17,
+      "stream_id": "1701",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1701"
+    },
+    {
+      "channel": 18,
+      "stream_id": "1801",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1801"
+    },
+    {
+      "channel": 19,
+      "stream_id": "1901",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/1901"
+    },
+    {
+      "channel": 20,
+      "stream_id": "2001",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2001"
+    },
+    {
+      "channel": 21,
+      "stream_id": "2101",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2101"
+    },
+    {
+      "channel": 22,
+      "stream_id": "2201",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2201"
+    },
+    {
+      "channel": 23,
+      "stream_id": "2301",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2301"
+    },
+    {
+      "channel": 24,
+      "stream_id": "2401",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2401"
+    },
+    {
+      "channel": 25,
+      "stream_id": "2501",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2501"
+    },
+    {
+      "channel": 26,
+      "stream_id": "2601",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2601"
+    },
+    {
+      "channel": 27,
+      "stream_id": "2701",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2701"
+    },
+    {
+      "channel": 28,
+      "stream_id": "2801",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2801"
+    },
+    {
+      "channel": 29,
+      "stream_id": "2901",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/2901"
+    },
+    {
+      "channel": 30,
+      "stream_id": "3001",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/3001"
+    },
+    {
+      "channel": 31,
+      "stream_id": "3101",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.100:554/Streaming/Channels/3101"
+    }
+  ],
+  "NVR #2": [
+    {
+      "channel": 1,
+      "stream_id": "101",
+      "status": "NO_VIDEO",
+      "error": "No video stream detected",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/101"
+    },
+    {
+      "channel": 2,
+      "stream_id": "201",
+      "status": "ACTIVE",
+      "resolution": "960x1088",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/201"
+    },
+    {
+      "channel": 3,
+      "stream_id": "301",
+      "status": "ACTIVE",
+      "resolution": "1280x720",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/301"
+    },
+    {
+      "channel": 4,
+      "stream_id": "401",
+      "status": "ACTIVE",
+      "resolution": "960x576",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/401"
+    },
+    {
+      "channel": 5,
+      "stream_id": "501",
+      "status": "ACTIVE",
+      "resolution": "960x1088",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/501"
+    },
+    {
+      "channel": 6,
+      "stream_id": "601",
+      "status": "ACTIVE",
+      "resolution": "960x1088",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/601"
+    },
+    {
+      "channel": 7,
+      "stream_id": "701",
+      "status": "ACTIVE",
+      "resolution": "1280x720",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/701"
+    },
+    {
+      "channel": 8,
+      "stream_id": "801",
+      "status": "ACTIVE",
+      "resolution": "1280x720",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/801"
+    },
+    {
+      "channel": 9,
+      "stream_id": "901",
+      "status": "ACTIVE",
+      "resolution": "960x576",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/901"
+    },
+    {
+      "channel": 10,
+      "stream_id": "1001",
+      "status": "ACTIVE",
+      "resolution": "960x1088",
+      "codec": "h264",
+      "url": "rtsp://admin:***@192.168.0.101:554/Streaming/Channels/1001"
+    }
+  ]
+}

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pruebas 3D | Mapeo del Condominio</title>
+
+    <!-- Import map for Three.js ES6 modules -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* === MODERN THEME VARIABLES === */
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-hover: rgba(51, 65, 85, 0.8);
+            --accent-primary: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(148, 163, 184, 0.1);
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: var(--glass-blur);
+            z-index: 10;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Sidebar Panel */
+        .sidebar {
+            grid-row: 2;
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-btn {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .control-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 3D Canvas Container */
+        .canvas-container {
+            grid-column: 2;
+            grid-row: 2;
+            position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .loading.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Info Overlay */
+        .info-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 400px;
+        }
+
+        .info-overlay h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #22d3ee;
+        }
+
+        .info-overlay p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Alert Badge */
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        /* Status Indicator */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <div class="header-icon">🧪</div>
+                <div>
+                    <h1>Pruebas 3D - Mapeo del Condominio</h1>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                        EXPERIMENTAL • Visualización en desarrollo
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted);">
+                    <span class="status-dot online"></span>
+                    <span>Conectado</span>
+                </div>
+                <button class="btn btn-secondary" onclick="window.location.href='/conserje.html'">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Simulation Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-flask"></i>
+                    Simulación de Alertas
+                </div>
+                <div class="panel-content">
+                    <button class="control-btn" onclick="simulateAlert('fence')">
+                        ⚡ Cerco Eléctrico
+                    </button>
+                    <button class="control-btn" onclick="simulateAlert('pumps')">
+                        💧 Sala de Bombas
+                    </button>
+                    <button class="control-btn" onclick="simulateAlert('fire')">
+                        🔥 Incendio
+                    </button>
+                    <button class="control-btn" onclick="simulateAlert('electric')">
+                        ⚡ Falla Eléctrica
+                    </button>
+                    <button class="control-btn" onclick="simulateAlert('water')">
+                        🌊 Tanques de Agua
+                    </button>
+                    <button class="control-btn" onclick="clearAlerts()"
+                        style="margin-top: 8px; background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444;">
+                        <i class="fas fa-times"></i> Limpiar Alertas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Legend Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-map"></i>
+                    Leyenda de Zonas
+                </div>
+                <div class="panel-content">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #34495e;"></div>
+                        <span>Torres (Edificios)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>Cerco Perimetral</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>Sala de Bombas</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #1abc9c;"></div>
+                        <span>Tanques de Agua</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>Piscina</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9b59b6;"></div>
+                        <span>Generador</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-bell"></i>
+                    Alertas Activas
+                    <span class="alert-badge" id="alertCount">0</span>
+                </div>
+                <div class="panel-content" id="alertsList">
+                    <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px;">
+                        Sin alertas activas
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera Controls Info -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-gamepad"></i>
+                    Controles
+                </div>
+                <div class="panel-content" style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+                    <div><strong>Rotar:</strong> Click izquierdo + arrastrar</div>
+                    <div><strong>Zoom:</strong> Scroll del mouse</div>
+                    <div><strong>Pan:</strong> Click derecho + arrastrar</div>
+                </div>
+            </div>
+
+            <!-- Motion Detection Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-video"></i>
+                    Movimiento Detectado
+                    <span class="alert-badge" id="motionCount">0</span>
+                </div>
+                <div class="panel-content" id="motionList">
+                    <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px;">
+                        Sin movimiento activo
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera Visibility Toggle -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-eye"></i>
+                    Visibilidad
+                </div>
+                <div class="panel-content">
+                    <button class="control-btn" id="toggleCameras" onclick="toggleCameraVisibility()">
+                        <i class="fas fa-camera"></i> Mostrar/Ocultar Cámaras
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 3D Canvas -->
+        <div class="canvas-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div style="color: var(--text-muted); font-size: 14px;">Cargando escena 3D...</div>
+            </div>
+            <canvas id="canvas3d"></canvas>
+
+            <div class="info-overlay">
+                <h3><i class="fas fa-info-circle"></i> Información</h3>
+                <p>
+                    Esta es una sección experimental para probar visualizaciones 3D del condominio.
+                    Utiliza los botones de la izquierda para simular diferentes tipos de alertas y
+                    observa cómo se visualizan en el mapa 3D.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Script -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Make THREE globally available for other scripts
+        window.THREE = THREE;
+        window.OrbitControls = OrbitControls;
+
+        console.log('✅ Three.js and OrbitControls loaded');
+
+        // Load scene manager and other modules
+        const scriptLoadPromises = [
+            loadScript('/js/3d-scene-manager.js'),
+            loadScript('/js/3d-condominium-model.js'),
+            loadScript('/js/3d-alert-visualizer.js'),
+            loadScript('/js/3d-camera-visualizer.js')
+        ];
+
+        Promise.all(scriptLoadPromises).then(() => {
+            console.log('✅ All modules loaded, initializing app');
+            window.initializeApp();
+        }).catch(error => {
+            console.error('❌ Error loading scripts:', error);
+            document.getElementById('loading').innerHTML = `
+        <div style="color: #ef4444; text-align: center;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 12px;"></i>
+          <div>Error al cargar módulos 3D</div>
+          <div style="font-size: 12px; margin-top: 8px;">${error.message}</div>
+        </div>
+      `;
+        });
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Failed to load ${src}`));
+                document.body.appendChild(script);
+            });
+        }
+    </script>
+
+    <script>
+        // Global variables
+        let sceneManager, condominiumModel, alertVisualizer, cameraVisualizer;
+        let socket;
+
+        // Initialize Socket.IO
+        socket = io();
+
+        socket.on('connect', () => {
+            console.log('✅ Conectado al servidor');
+            updateConnectionStatus(true);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Desconectado del servidor');
+            updateConnectionStatus(false);
+        });
+
+        // Listen for real-time alerts
+        socket.on('sensors-update', (state) => {
+            console.log('Sensor update:', state);
+        });
+
+        // Motion alerts disabled per client request
+        /*
+        socket.on('motion-alert', (data) => {
+            console.log('🔔 Motion alert:', data);
+
+            // Activate motion visualization in 3D map
+            if (cameraVisualizer && data.camId) {
+                cameraVisualizer.activateMotionAlert(data.camId);
+
+                // Auto-deactivate after 5 seconds
+                setTimeout(() => {
+                    cameraVisualizer.deactivateMotionAlert(data.camId);
+                    updateMotionAlertsUI();
+                }, 5000);
+
+                updateMotionAlertsUI();
+            }
+        });
+        */
+
+        function updateConnectionStatus(connected) {
+            const statusDot = document.querySelector('.status-dot');
+            const statusText = document.querySelector('.header-actions span:last-child');
+
+            if (connected) {
+                statusDot.classList.add('online');
+                statusDot.classList.remove('offline');
+                statusText.textContent = 'Conectado';
+            } else {
+                statusDot.classList.remove('online');
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Desconectado';
+            }
+        }
+
+        // This function will be called after all modules are loaded
+        window.initializeApp = function () {
+            try {
+                // Initialize scene manager
+                sceneManager = new SceneManager('canvas3d');
+
+                // Initialize condominium model
+                condominiumModel = new CondominiumModel(sceneManager);
+                condominiumModel.build();
+
+                // Initialize alert visualizer
+                alertVisualizer = new AlertVisualizer(sceneManager, condominiumModel);
+
+                // Initialize camera visualizer (pass condominiumModel for building highlights)
+                cameraVisualizer = new CameraVisualizer(sceneManager, condominiumModel);
+
+                // Load camera positions
+                cameraVisualizer.loadCameraPositions().then(() => {
+                    console.log('✅ Camera visualizer ready');
+                }).catch(error => {
+                    console.error('❌ Error loading cameras:', error);
+                });
+
+                // Start rendering
+                sceneManager.startAnimation();
+
+                // Hide loading indicator
+                document.getElementById('loading').classList.add('hidden');
+
+                console.log('✅ Escena 3D inicializada correctamente');
+            } catch (error) {
+                console.error('❌ Error al inicializar escena 3D:', error);
+                document.getElementById('loading').innerHTML = `
+          <div style="color: #ef4444; text-align: center;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 12px;"></i>
+            <div>Error al cargar la escena 3D</div>
+            <div style="font-size: 12px; margin-top: 8px;">${error.message}</div>
+          </div>
+        `;
+            }
+        };
+
+        // Simulation functions
+        function simulateAlert(type) {
+            if (!alertVisualizer) {
+                console.error('Alert visualizer not initialized');
+                return;
+            }
+
+            alertVisualizer.addAlert(type);
+            updateAlertsList();
+        }
+
+        function clearAlerts() {
+            if (!alertVisualizer) return;
+
+            alertVisualizer.clearAll();
+            updateAlertsList();
+        }
+
+        function updateAlertsList() {
+            if (!alertVisualizer) return;
+
+            const alertsList = document.getElementById('alertsList');
+            const alertCount = document.getElementById('alertCount');
+            const activeAlerts = alertVisualizer.getActiveAlerts();
+
+            alertCount.textContent = activeAlerts.length;
+
+            if (activeAlerts.length === 0) {
+                alertsList.innerHTML = `
+          <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px;">
+            Sin alertas activas
+          </div>
+        `;
+            } else {
+                alertsList.innerHTML = activeAlerts.map(alert => `
+          <div class="legend-item" style="padding: 10px; background: rgba(59, 130, 246, 0.05); border-radius: 6px;">
+            <div class="legend-color" style="background: ${alert.colorHex};"></div>
+            <span style="flex: 1;">${alert.name}</span>
+            <button onclick="alertVisualizer.removeAlert('${alert.id}'); updateAlertsList();" 
+                    style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `).join('');
+            }
+        }
+
+        // Update motion alerts UI
+        function updateMotionAlertsUI() {
+            if (!cameraVisualizer) return;
+
+            const motionList = document.getElementById('motionList');
+            const motionCount = document.getElementById('motionCount');
+            const activeMotionAlerts = cameraVisualizer.getActiveMotionAlerts();
+
+            motionCount.textContent = activeMotionAlerts.length;
+
+            if (activeMotionAlerts.length === 0) {
+                motionList.innerHTML = `
+          <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px;">
+            Sin movimiento activo
+          </div>
+        `;
+            } else {
+                motionList.innerHTML = activeMotionAlerts.map(alert => `
+          <div class="legend-item" style="padding: 10px; background: rgba(250, 204, 21, 0.1); border-radius: 6px; border-left: 3px solid #facc15;">
+            <i class="fas fa-video" style="color: #facc15;"></i>
+            <span style="flex: 1; font-size: 12px;">${alert.name}</span>
+            <span style="font-size: 10px; color: var(--text-muted);">${alert.zone}</span>
+          </div>
+        `).join('');
+            }
+        }
+
+        // Toggle camera visibility
+        let camerasVisible = true;
+        function toggleCameraVisibility() {
+            if (!cameraVisualizer) return;
+
+            camerasVisible = !camerasVisible;
+            cameraVisualizer.toggleCameraVisibility(camerasVisible);
+
+            const btn = document.getElementById('toggleCameras');
+            btn.classList.toggle('active', camerasVisible);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (sceneManager) {
+                sceneManager.onWindowResize();
+            }
+        });
+    </script>
+</body>
+
+</html>

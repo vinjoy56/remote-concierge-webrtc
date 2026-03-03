@@ -1,0 +1,678 @@
+# MediaMTX Configuration
+# https://github.com/bluenviron/mediamtx
+
+# Paths define los streams disponibles
+# Usando XX02 para WEB (substream) y XX01 para HD (mainstream)
+paths:
+  # === ENTRADAS PRINCIPALES (Alta Prioridad) ===
+  
+  # Cam 1: Conserjeria
+  cam1:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3602
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam1_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 2: ENTRADA TORRE A
+  cam2:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3302
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam2_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 3: ENTRADA TORRE B
+  cam3:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4002
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam3_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 4: ENTRADA VEHICULAR PRINCIPAL
+  cam4:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4202
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam4_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === ESTACIONAMIENTOS (Prioridad Media) ===
+  
+  # Cam 5: ESTACIONAMIENTO PANDERETAS
+  cam5:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3402
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam5_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 6: ESTACIONAMIENTO PANDERETA 2
+  cam6:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4102
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam6_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 7: ESTACIONAMIENTO VISITA
+  cam7:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4302
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam7_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 8: ESTACIONAMIENTO DE 89 A 94
+  cam8:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3802
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam8_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === ASCENSORES (Prioridad Media) ===
+  
+  # Cam 9: ASCENSOR NORTE A
+  cam9:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4902
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam9_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 10: ASCENSOR NORTE B
+  cam10:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4502
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam10_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 11: ASCENSOR SUR A
+  cam11:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4802
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam11_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 12: ASCENSOR SUR B
+  cam12:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4602
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam12_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === ÁREAS SECUNDARIAS (Prioridad Baja) ===
+  
+  # Cam 13: COCINA TORRE A
+  cam13:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3902
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam13_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 14: LAVANDERIA
+  cam14:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3702
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam14_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 15: BODEGA 70 A 77
+  cam15:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3502
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam15_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 16: Camera 01
+  cam16:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4402
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam16_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/4401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === NVR #2 (192.168.0.101) - COMMON AREAS ===
+  
+  # Cam 17: SALA DE MULTIUSO
+  cam17:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1702
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam17_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 18: SALA DE CINE
+  cam18:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1802
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam18_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 19: PISCINA
+  cam19:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1902
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam19_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === NVR #2 - INFRASTRUCTURE ===
+  
+  # Cam 20: SHAFT B
+  cam20:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2002
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam20_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 21: SALA BOMBA GENERADOR
+  cam21:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2102
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam21_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 22: SALA DE BOMBA
+  cam22:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2202
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam22_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === NVR #2 - GENERAL ===
+  
+  # Cam 23: Camera 01 (NVR2)
+  cam23:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2302
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam23_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/2301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # === NVR #2 - ANALOG CAMERAS ===
+
+  # Cam 24: Estacionamiento Generador
+  cam24:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam24_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 25: Bodega Aseo
+  cam25:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam25_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 26: Estacionamiento Torre B
+  cam26:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam26_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 27: Shaft A
+  cam27:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam27_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 28: Entrada Peatonal
+  cam28:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam28_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 29: Est. Fondo
+  cam29:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam29_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 30: Entrada Ascensor T.B
+  cam30:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam30_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 31: Bicicletas
+  cam31:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam31_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 32: Entrada Ascensor T.A
+  cam32:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam32_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 33: Entrada Vehicular 2
+  cam33:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam33_hd:
+    source: rtsp://admin:j408688271A@192.168.0.101:554/Streaming/Channels/1001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  
+  # === NVR #1 - ANALOG CAMERAS (New) ===
+  # IDs 1-32, Streams 101-3201
+  
+  # Cam 35: Est. 4
+  cam35:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam35_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 36: Est. 3
+  cam36:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam36_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 37: Ascensores B
+  cam37:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam37_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 38: Bicicletero
+  cam38:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam38_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 39-65: Generic NVR1 Analog (Loop 5-31 for brevity, but listing explicitly for safety)
+  # Cam 39 (Ch 5)
+  cam39:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam39_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 40 (Ch 6)
+  cam40:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam40_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  
+  # Cam 41 (Ch 7)
+  cam41:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam41_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  
+  # Cam 42 (Ch 8)
+  cam42:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam42_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  
+  # Cam 43 (Ch 9)
+  cam43:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam43_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 44 (Ch 10)
+  cam44:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam44_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 45 (Ch 11)
+  cam45:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam45_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 46 (Ch 12)
+  cam46:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam46_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 47 (Ch 13)
+  cam47:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam47_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 48 (Ch 14)
+  cam48:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam48_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 49 (Ch 15)
+  cam49:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam49_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 50 (Ch 16)
+  cam50:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam50_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 51 (Ch 17)
+  cam51:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam51_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 52 (Ch 18)
+  cam52:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam52_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 53 (Ch 19)
+  cam53:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam53_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/1901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 54 (Ch 20)
+  cam54:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam54_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 55 (Ch 21)
+  cam55:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam55_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 56 (Ch 22)
+  cam56:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam56_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2201
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 57 (Ch 23)
+  cam57:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam57_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2301
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 58 (Ch 24)
+  cam58:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam58_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2401
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 59 (Ch 25)
+  cam59:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam59_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2501
+    rtspTransport: tcp
+    sourceOnDemand: yes
+    
+  # Cam 60 (Ch 26)
+  cam60:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam60_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2601
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 61 (Ch 27)
+  cam61:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam61_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2701
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 62 (Ch 28)
+  cam62:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam62_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2801
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 63 (Ch 29)
+  cam63:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam63_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/2901
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 64 (Ch 30)
+  cam64:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam64_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3001
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  # Cam 65 (Ch 31)
+  cam65:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+  cam65_hd:
+    source: rtsp://admin:j408688271A@192.168.0.100:554/Streaming/Channels/3101
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+# WebRTC configuration
+webrtc: yes
+webrtcAddress: :8889
+webrtcICEServers2:
+  - url: stun:stun.l.google.com:19302
+
+# RTSP Address
+rtspAddress: :8554
+
+# Logging
+logLevel: info
+logDestinations: [stdout]

@@ -1,449 +1,3651 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Conserjería Remota</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conserjería Remota | Panel de Control</title>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/adapter.js"></script>
+  <script src="/mediamtx-webrtc.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
-    .camera-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-    .camera-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 6px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.2s; }
-    .camera-card:hover { transform: scale(1.02); }
-    .alarm-active { border: 2px solid #ff5252; }
-    .log-entry { padding: 6px 10px; border-bottom: 1px solid #2a2a2a; font-size: 0.85rem; }
-    .log-entry.alarm { color: #ff6b6b; }
-    .log-entry.lock { color: #4ade80; }
-    .log-entry.info { color: #93c5fd; }
-    .log-entry.error { color: #f87171; }
-    #expandedView { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-    .expanded-card { background: #1e1e1e; padding: 16px; border-radius: 12px; width: 80%; max-width: 1000px; }
-    .tab-btn { padding: 8px 16px; background: #2d2d2d; border: none; color: #bbb; cursor: pointer; border-radius: 6px 6px 0 0; }
-    .tab-btn.active { background: #1e1e1e; color: white; font-weight: bold; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-    .grayscale { filter: grayscale(100%); }
-    .opacity-50 { opacity: 0.5; }
+    /* === MODERN THEME VARIABLES === */
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --bg-card-hover: rgba(51, 65, 85, 0.8);
+      --accent-primary: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(148, 163, 184, 0.1);
+      --glass-blur: blur(12px);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      /* App-like feel */
+    }
+
+    /* === GLASSMORPHISM UTILS === */
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* === LAYOUT === */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: 60px 1fr;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* HEADER */
+    .app-header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.9);
+      z-index: 10;
+    }
+
+    /* SIDEBAR */
+    .app-sidebar {
+      grid-row: 2 / -1;
+      padding: 20px;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* MAIN CONTENT */
+    .app-content {
+      grid-column: 2;
+      grid-row: 2;
+      padding: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* === FULLSCREEN MODE === */
+    .app-layout {
+      transition: grid-template-columns 0.3s ease-in-out;
+    }
+
+    .app-layout.fullscreen {
+      grid-template-columns: 0px 1fr !important;
+    }
+
+    .app-sidebar {
+      transition: all 0.3s ease-in-out;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: nowrap;
+      /* Prevent text wrap during collapse */
+    }
+
+    .app-layout.fullscreen .app-sidebar {
+      padding: 20px 0;
+      /* Remove horizontal padding */
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    /* === CAMERAS GRID === */
+    /* === CAMERAS GRID === */
+    .camera-grid {
+      /* Handled by Tailwind classes now */
+      gap: 16px;
+    }
+
+    .camera-card {
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .camera-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    .alarm-active {
+      border: 2px solid #ef4444;
+      animation: pulse 2s infinite;
+    }
+
+    .motion-active {
+      border: 3px solid #facc15;
+      animation: pulse-yellow 1.5s infinite;
+      box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+    }
+
+    @keyframes pulse-yellow {
+      0% {
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 0 0 0 rgba(250, 204, 21, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 0 0 15px rgba(250, 204, 21, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 0 0 0 rgba(250, 204, 21, 0);
+      }
+    }
+
+    /* === SENSORS DASHBOARD === */
+    .sensors-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sensor-card {
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      /* Removed min-height to allow natural compression */
+    }
+
+    /* Hydraulic Tank */
+    .tank-container {
+      width: 100px;
+      height: 140px;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      background: #1e293b;
+      margin: 0 auto;
+    }
+
+    .tank-liquid {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #3b82f6, #60a5fa);
+      transition: height 1s ease-in-out;
+      opacity: 0.8;
+    }
+
+    /* AC Drive Gauge */
+    .gauge-value {
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
+    @keyframes spin-slow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin-slow {
+      animation: spin-slow 3s linear infinite;
+    }
+
+    /* Utility */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.online {
+      background-color: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .status-dot.offline {
+      background-color: #ef4444;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Logs Panel */
+    .log-panel {
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Estilos para los videos */
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background-color: #000;
+      transform: scaleX(-1);
+      /* Opcional: para voltear la imagen horizontalmente si es necesario */
+    }
+
+    /* Asegurar que el contenedor del video mantenga su relación de aspecto */
+    .aspect-video {
+      position: relative;
+      padding-bottom: 56.25%;
+      /* 16:9 Aspect Ratio */
+      height: 0;
+      overflow: hidden;
+    }
+
+    .aspect-video video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background-color: #000;
+    }
+
+    /* Ensure video elements are visible */
+    video {
+      display: block;
+      background-color: #000;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Debug styles */
+    .debug-border {
+      border: 2px solid red !important;
+    }
+
+    .debug-bg {
+      background-color: rgba(255, 0, 0, 0.2) !important;
+    }
+
+    /* === FULLSCREEN SENSOR VIEW === */
+    .sensors-fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      z-index: 9999 !important;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+      overflow-y: auto !important;
+      padding: 1rem !important;
+      margin: 0 !important;
+    }
+
+    .sensors-fullscreen .sensor-grid {
+      max-width: none !important;
+      width: 100% !important;
+    }
+
+    .hide-in-fullscreen-sensors {
+      display: none !important;
+    }
+
+    /* Camera Status Overlays */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .camera-status-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.9);
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+
+    .camera-status-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .status-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-text {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .status-subtext {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Status types */
+    .status-offline .status-icon {
+      color: #64748b;
+    }
+
+    .status-error .status-icon {
+      color: #ef4444;
+    }
+
+    .status-loading .status-icon {
+      color: #3b82f6;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Ensure video is behind overlay */
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   </style>
 </head>
-<body class="p-4">
-  <div id="expandedView" onclick="closeExpandedView()">
-    <div class="expanded-card" onclick="event.stopPropagation()">
-      <div class="flex justify-between items-center mb-4">
-        <h2 id="expandedTitle" class="text-xl font-bold"></h2>
-        <button onclick="closeExpandedView()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
-      </div>
-      <div id="expandedVideoContainer" class="h-96 bg-black rounded-lg mb-4 flex items-center justify-center">
-        <video id="expandedVideo" autoplay playsinline class="w-full h-full object-contain"></video>
-        <span id="expandedVideoPlaceholder" class="text-gray-500">Vista en vivo de <span id="expandedCamName"></span></span>
-      </div>
-      <div id="expandedControls" class="flex justify-center gap-4">
-        <button id="expandedLockBtn" class="px-4 py-2 rounded font-medium"></button>
-        <button id="expandedFireBtn" class="text-orange-400 text-xl hover:text-orange-300" title="Alarma de incendio">🔥</button>
-        <button id="expandedSoundBtn" class="text-red-400 text-xl hover:text-red-300" title="Alarma sonora">🔊</button>
-      </div>
-    </div>
-  </div>
 
-  <div class="flex flex-col lg:flex-row gap-6">
-    <!-- Panel izquierdo: Cámara del conserje + Logs + Logout -->
-    <div class="w-full lg:w-80 flex flex-col gap-4">
-      <!-- Cerrar sesión -->
-      <div class="bg-gray-800 rounded-xl p-3 flex justify-between items-center">
-        <span class="text-sm font-semibold"> Sesión activa </span>
-        <button onclick="logout()" class="text-xs bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded">
-          Cerrar sesión
+<body>
+
+  <!-- EXPANDED VIEW MODAL -->
+  <div id="expandedView"
+    class="fixed inset-0 bg-black/90 z-50 hidden flex-col items-center justify-center backdrop-blur-sm"
+    onclick="closeExpandedView()">
+    <!-- BORDERLESS CONTAINER -->
+    <div class="relative w-full h-full bg-black" onclick="event.stopPropagation()">
+
+      <!-- VIDEO -->
+      <video id="expandedVideo" autoplay playsinline muted class="w-full h-full object-contain"></video>
+
+      <!-- TOP OVERLAY (Title + Close) -->
+      <div
+        class="absolute top-0 left-0 w-full p-6 bg-gradient-to-b from-black/90 to-transparent flex justify-between items-start z-10 pointer-events-none">
+        <h2 id="expandedTitle" class="text-3xl font-bold text-white drop-shadow-md pointer-events-auto"></h2>
+        <button onclick="closeExpandedView()"
+          class="text-white/80 hover:text-white text-5xl leading-none transition drop-shadow-md pointer-events-auto hover:scale-110 transform">&times;</button>
+      </div>
+
+      <!-- BOTTOM OVERLAY (Controls) -->
+      <div id="expandedControls"
+        class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent flex justify-center gap-8 z-10 pointer-events-auto">
+        <button id="expandedLockBtn"
+          class="px-8 py-3 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg backdrop-blur-md border border-white/10"></button>
+        <button id="expandedFireBtn"
+          class="bg-red-600/80 hover:bg-red-500 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center gap-3 transition transform hover:scale-105 shadow-lg backdrop-blur-md border border-red-500/30">
+          🔥 Incendio
+        </button>
+        <button id="expandedSoundBtn"
+          class="bg-orange-600/80 hover:bg-orange-500 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center gap-3 transition transform hover:scale-105 shadow-lg backdrop-blur-md border border-orange-500/30">
+          🔊 Alarma
         </button>
       </div>
 
-      <div class="bg-gray-800 rounded-xl p-3">
-        <h3 class="text-sm font-semibold mb-2 flex items-center">
-          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-          Tu transmisión
-        </h3>
-        <video id="localVideo" autoplay muted playsinline class="w-full rounded-lg bg-black aspect-video"></video>
-      </div>
-
-      <div class="bg-gray-800 rounded-xl p-3 flex-grow flex flex-col">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="text-sm font-semibold">Registro de Actividad</h3>
-          <button onclick="clearLogsUI()" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">
-            Limpiar vista
-          </button>
-        </div>
-        <div id="logContainer" class="text-xs overflow-y-auto flex-grow" style="max-height: 300px;">
-          <!-- Los logs se cargarán desde el servidor -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Panel derecho: Secciones y cámaras -->
-    <div class="flex-grow">
-      <h2 class="text-xl font-bold mb-2">Cámaras del Condominio</h2>
-      <div class="tabs" id="tabsContainer">
-        <!-- Se llenará dinámicamente -->
-      </div>
-      <div class="camera-grid" id="camerasGrid"></div>
     </div>
   </div>
 
+  <div class="app-layout">
+    <!-- HEADER -->
+    <!-- HEADER -->
+    <header class="app-header flex justify-between">
+      <div class="flex items-center gap-4">
+
+        <!-- Sidebar Toggle -->
+        <button onclick="toggleSidebar()"
+          class="text-gray-400 hover:text-white transition p-2 rounded-lg hover:bg-white/5 mr-2"
+          title="Alternar Menú Lateral">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+
+        <!-- Logo / Icon -->
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/20 flex items-center justify-center font-bold text-white text-xl">
+          <i class="fas fa-building"></i>
+        </div>
+
+        <!-- Titles -->
+        <div class="flex flex-col">
+          <h1 class="font-bold text-lg tracking-wide text-white leading-tight">Automatización de Edificio Inteligente
+          </h1>
+          <div class="text-sm font-medium text-cyan-400">Condominio Alto La Serena 4</div>
+        </div>
+      </div>
+
+      <!-- Right Side: Weather, Time, Status, Logout -->
+      <div class="flex items-center gap-6">
+
+        <!-- VISUAL ALERTS SYSTEM -->
+        <div id="headerAlerts"
+          class="hidden md:flex items-center gap-3 mr-4 bg-slate-900/50 px-3 py-2 rounded-full border border-slate-700/50">
+          <div id="alert-red" onclick="highlightSensor('sensors', 'fenceCard')"
+            class="w-3 h-3 rounded-full bg-red-500 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🔴 Cerco Eléctrico (Ver Sensor)"></div>
+          <div id="alert-blue" onclick="highlightSensor('sensors', 'card-pumps')"
+            class="w-3 h-3 rounded-full bg-blue-500 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🔵 Sala de Bombas (Ver Sensor)"></div>
+          <div id="alert-orange" onclick="highlightSensor('sensors', 'card-fire')"
+            class="w-3 h-3 rounded-full bg-orange-500 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🟠 Incendios (Ver Sensor)"></div>
+          <div id="alert-yellow" onclick="highlightSensor('sensors', 'card-electric')"
+            class="w-3 h-3 rounded-full bg-yellow-400 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🟡 Energía Torres (Ver Panel)"></div>
+          <div id="alert-green" onclick="highlightSensor('sensors', 'card-water')"
+            class="w-3 h-3 rounded-full bg-green-500 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🟢 Exceso Agua (Ver Sensor)"></div>
+          <div id="alert-purple" onclick="switchView('solar')"
+            class="w-3 h-3 rounded-full bg-purple-500 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🟣 Paneles Solares (Ir a Solar)"></div>
+          <div id="alert-black" onclick="highlightSensor('sensors', 'card-generator')"
+            class="w-3 h-3 rounded-full bg-black border border-slate-600 opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="⚫ Generador/Tanque (Ver Sensor)"></div>
+          <div id="alert-brown" onclick="highlightSensor('sensors', 'card-pool')"
+            class="w-3 h-3 rounded-full bg-[#8B4513] opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="🟤 Piscina (Ver Sensor)"></div>
+          <div id="alert-white" onclick="switchView('logs')"
+            class="w-3 h-3 rounded-full bg-white opacity-80 transition-all duration-300 cursor-pointer hover:scale-125"
+            title="⚪ Ascensor (Ir a Registros)"></div>
+        </div>
+
+        <!-- Weather Widget (Simple) -->
+        <div id="headerWeather"
+          class="hidden md:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+          <span id="weatherIcon" class="text-xl">☀️</span>
+          <div class="flex flex-col text-right">
+            <span id="weatherDesc" class="text-xs font-bold text-gray-200">Soleado</span>
+            <span id="weatherTemp" class="text-[10px] text-gray-400">22°C</span>
+          </div>
+        </div>
+
+        <!-- Time Widget -->
+        <div class="hidden md:flex flex-col text-right border-r border-slate-700 pr-6">
+          <div id="headerTime" class="text-lg font-mono font-bold text-white leading-none">--:--</div>
+          <div id="headerDate" class="text-xs text-gray-400 uppercase tracking-wider">...</div>
+        </div>
+
+        <div class="text-right hidden lg:block">
+          <div class="text-[10px] text-gray-500 uppercase tracking-widest">Estado</div>
+          <div class="text-xs font-bold text-green-400 flex items-center justify-end gap-2">
+            <div class="status-dot online"></div> En Línea
+          </div>
+        </div>
+
+        <!-- USER PROFILE BTN -->
+
+      </div>
+    </header>
+
+    <!-- CONNECTION STATUS BANNER -->
+    <div id="connectionBanner"
+      class="hidden fixed top-0 left-0 w-full bg-red-600 z-50 p-2 text-center text-white font-bold animate-pulse shadow-lg">
+      ⚠️ CONEXIÓN PERDIDA - Intentando reconectar...
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <aside class="app-sidebar glass-panel border-y-0 border-l-0">
+      <div class="mb-6">
+        <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">Vigilancia</div>
+        <div class="nav-item active" onclick="switchView('cameras')" id="nav-cameras">
+          <span>📹</span> Cámaras
+        </div>
+        <div class="nav-item" onclick="switchView('sensors')" id="nav-sensors">
+          <span>📡</span> Sensores
+        </div>
+        <div class="nav-item" onclick="switchView('solar')" id="nav-solar">
+          <span>☀️</span> Paneles Solares
+        </div>
+        <div class="nav-item" onclick="switchView('consumption')" id="nav-consumption">
+          <span>⚡</span> Consumos
+        </div>
+        <div class="nav-item" onclick="switchView('advanced')" id="nav-advanced">
+          <span>📊</span> Av. Info
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">Gestión</div>
+        <div class="nav-item" onclick="switchView('access')" id="nav-access">
+          <span>🔑</span> Accesos
+        </div>
+
+        <div class="nav-item" onclick="switchView('map')" id="nav-map">
+          <span>🧠</span> Mapa Predictivo
+        </div>
+        <div class="nav-item" onclick="window.open('/pruebas-3d.html', '_blank')" id="nav-3d-tests">
+          <span>🧪</span> Pruebas 3D
+        </div>
+        <div class="nav-item" onclick="switchView('residents')" id="nav-residents">
+          <span>👥</span> Residentes
+        </div>
+        <div class="nav-item" onclick="switchView('logs')" id="nav-logs">
+          <span>📜</span> Registros
+        </div>
+        <div class="nav-item" onclick="switchView('stats')" id="nav-stats">
+          <span>📈</span> Estadísticas
+        </div>
+      </div>
+
+      <div class="mt-auto flex flex-col gap-3 p-2 border-t border-slate-700/50 pt-4">
+        <!-- USER PROFILE BTN (Moved) -->
+        <button onclick="switchView('profile')"
+          class="flex items-center gap-3 w-full bg-slate-800/50 hover:bg-slate-700/80 p-2 rounded-lg border border-slate-700 transition group text-left">
+          <div
+            class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center font-bold text-white shadow-lg group-hover:shadow-cyan-500/20 transition-all">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Mi Perfil</span>
+            <span class="text-[10px] text-gray-500">Admin</span>
+          </div>
+        </button>
+
+        <button onclick="logout()"
+          class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 py-2 rounded-lg text-xs font-bold transition uppercase tracking-wider flex items-center justify-center gap-2">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT Area -->
+    <main class="app-content relative">
+
+      <!-- VIEW: CAMERAS -->
+      <div id="view-cameras" class="space-y-6 animate-fade-in">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Monitor
+            de Cámaras</h2>
+          <div class="flex items-center gap-4">
+            <div class="flex bg-slate-800/50 p-1 rounded-lg">
+              <button onclick="setGrid(2)" id="btnGrid2"
+                class="px-3 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors bg-slate-700 text-gray-400"
+                title="Vista de 2 columnas (Laptop)">
+                2x
+              </button>
+              <button onclick="setGrid(3)" id="btnGrid3"
+                class="px-3 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors bg-cyan-600 text-white"
+                title="Vista de 3 columnas">
+                3x
+              </button>
+              <button onclick="setGrid(4)" id="btnGrid4"
+                class="px-3 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors bg-slate-700 text-gray-400"
+                title="Vista de 4 columnas">
+                4x
+              </button>
+            </div>
+
+            <div class="flex bg-slate-800/50 p-1 rounded-lg" id="cameraFilterTabs">
+              <!-- Tabs will be injected here -->
+            </div>
+          </div>
+        </div>
+        <div class="camera-grid" id="camerasGrid"></div>
+      </div>
+
+      <!-- VIEW: SENSORS (REVAMPED) -->
+      <div id="view-sensors" class="hidden h-full flex flex-col space-y-6 animate-fade-in">
+
+        <!-- SENSORS HEADER -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+              Monitoreo de sensores</h2>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Report Buttons -->
+            <div class="flex bg-slate-800/80 rounded-lg p-1 border border-slate-700">
+              <button
+                class="px-3 py-1.5 text-xs font-bold text-white bg-slate-700 rounded shadow-sm hover:bg-slate-600 transition">Semanal</button>
+              <button
+                class="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition hover:bg-slate-700/50 rounded">Mensual</button>
+              <button
+                class="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition hover:bg-slate-700/50 rounded">Anual</button>
+            </div>
+
+            <!-- Fullscreen Toggle -->
+            <button id="fullscreenToggleBtn" onclick="toggleSensorsFullscreen()"
+              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition shadow-lg shadow-blue-500/30 flex items-center gap-2">
+              ⛶ Pantalla Completa
+            </button>
+
+            <!-- Alert Bell -->
+            <button
+              class="relative p-2.5 text-gray-400 hover:text-white transition bg-slate-800/80 rounded-lg border border-slate-700 hover:border-slate-500 hover:bg-slate-700">
+              <div class="text-xl">🔔</div>
+              <span
+                class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SENSOR SECTIONS -->
+        <div class="space-y-8 overflow-y-auto pr-2 pb-10">
+
+          <!-- ROW 1: WATER SYSTEMS -->
+          <div>
+            <h3
+              class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-cyan-500/20 pb-2">
+              <i class="fas fa-water"></i> Sistema Hidráulico
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+              <!-- PUMP ROOMS -->
+              <div class="sensor-card glass-panel p-3" id="card-pumps">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="text-2xl">💧</div>
+                  <div>
+                    <h3 class="font-bold text-sm text-white">Bombas de Agua</h3>
+                    <div class="text-xs text-gray-400">Presión Constante</div>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="bg-slate-800/40 p-2 rounded border border-slate-700">
+                    <div class="flex justify-between items-baseline mb-1">
+                      <span class="text-xs text-gray-400">Torre A</span>
+                      <span class="text-lg font-bold text-blue-400">4.2 Bar</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
+                      <div
+                        class="h-full bg-gradient-to-r from-blue-600 to-blue-400 w-[84%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-slate-800/40 p-2 rounded border border-slate-700">
+                    <div class="flex justify-between items-baseline mb-1">
+                      <span class="text-xs text-gray-400">Torre B</span>
+                      <span class="text-lg font-bold text-blue-400">4.1 Bar</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
+                      <div
+                        class="h-full bg-gradient-to-r from-blue-600 to-blue-400 w-[82%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                  <span
+                    class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded border border-green-500/30">B1:
+                    ON</span>
+                  <span class="text-xs px-2 py-0.5 bg-slate-700 text-gray-400 rounded">B2: STBY</span>
+                </div>
+              </div>
+
+              <!-- WATER TANKS -->
+              <div class="sensor-card glass-panel p-3" id="card-tanks">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="text-2xl">🌊</div>
+                  <div>
+                    <h3 class="font-bold text-sm text-white">Estanques de Agua</h3>
+                    <div class="text-xs text-gray-400">200,000 L Total</div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="text-center">
+                    <div class="text-xs text-gray-400 mb-1">Estanque A</div>
+                    <div
+                      class="relative h-24 w-full bg-gradient-to-b from-slate-900 to-slate-800 rounded-lg overflow-hidden border-2 border-slate-700 shadow-lg">
+                      <div
+                        class="absolute bottom-0 w-full bg-gradient-to-t from-cyan-600 via-cyan-500 to-cyan-400 transition-all shadow-[0_0_20px_rgba(34,211,238,0.5)]"
+                        style="height: 85%">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                        </div>
+                      </div>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">85%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-xs text-gray-400 mb-1">Estanque B</div>
+                    <div
+                      class="relative h-24 w-full bg-gradient-to-b from-slate-900 to-slate-800 rounded-lg overflow-hidden border-2 border-slate-700 shadow-lg">
+                      <div
+                        class="absolute bottom-0 w-full bg-gradient-to-t from-cyan-600 via-cyan-500 to-cyan-400 transition-all shadow-[0_0_20px_rgba(34,211,238,0.5)]"
+                        style="height: 92%">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent">
+                        </div>
+                      </div>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">92%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- COMMON AREAS WATER -->
+              <div class="sensor-card glass-panel p-3" id="card-common-water">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="text-2xl">💦</div>
+                  <div>
+                    <h3 class="font-bold text-sm text-white">Agua Común</h3>
+                    <div class="text-xs text-gray-400">Áreas Comunes</div>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="bg-slate-800/40 p-2 rounded border border-slate-700">
+                    <div class="text-xs text-gray-400">Flujo Actual</div>
+                    <div class="flex items-baseline gap-1">
+                      <span id="val-flow-rate" class="text-xl font-bold text-cyan-400">12.5</span>
+                      <span class="text-xs text-gray-500">L/min</span>
+                    </div>
+                  </div>
+                  <div class="bg-slate-800/40 p-2 rounded border border-slate-700">
+                    <div class="text-xs text-gray-400">Consumo Hoy</div>
+                    <div class="flex items-baseline gap-1">
+                      <span id="val-water-consumed" class="text-xl font-bold text-white">4,200</span>
+                      <span class="text-xs text-gray-500">L</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-2 text-xs bg-green-500/10 border border-green-500/30 p-1.5 rounded mt-2">
+                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span class="text-green-400">Normal</span>
+                </div>
+              </div>
+
+              <!-- POOL -->
+              <div class="sensor-card glass-panel p-3" id="card-pool">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="text-2xl">🏊</div>
+                  <h3 class="font-bold text-sm text-white">Piscina</h3>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="text-center">
+                    <div class="text-xs text-gray-400 mb-1">Temp</div>
+                    <div class="text-lg font-bold text-cyan-400">24.5</div>
+                    <div class="text-[10px] text-gray-500">°C</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-xs text-gray-400 mb-1">pH</div>
+                    <div class="text-lg font-bold text-green-400">7.2</div>
+                    <div class="text-[10px] text-gray-500">Acidez</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-xs text-gray-400 mb-1">Cloro</div>
+                    <div class="text-lg font-bold text-white">1.5</div>
+                    <div class="text-[10px] text-gray-500">ppm</div>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center justify-center gap-2 text-sm bg-green-500/10 border border-green-500/30 p-2 rounded mt-3">
+                  <span class="text-green-400">●</span> Bomba Activa
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ROW 2: SECURITY & ENERGY -->
+          <div>
+            <div class="flex flex-col xl:flex-row gap-6">
+
+              <!-- LEFT: SECURITY -->
+              <div class="xl:w-[35%] flex flex-col">
+                <h3
+                  class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-red-500/20 pb-2">
+                  <i class="fas fa-shield-alt"></i> Seguridad
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 h-full content-start">
+                  <!-- ELECTRIC FENCE (from sidebar) -->
+                  <div class="sensor-card glass-panel p-3" id="fenceCard">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="text-2xl">⚡</div>
+                        <div>
+                          <h3 class="font-bold text-sm text-white">Cerco Eléctrico</h3>
+                          <div class="text-xs text-green-400">✓ ACTIVO</div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-xl font-bold text-yellow-400">95%</div>
+                      </div>
+                    </div>
+                    <div class="mt-2 h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
+                      <div
+                        class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 w-[95%] shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- FIRE ALARM (from sidebar) -->
+                  <div class="sensor-card glass-panel p-3" id="card-fire">
+                    <div class="flex items-center gap-2 mb-2">
+                      <div class="text-2xl">🔥</div>
+                      <h3 class="font-bold text-sm text-white">Alarma Incendio</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <div class="bg-green-900/20 border border-green-900/50 rounded p-1.5 flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.8)]"></div>
+                        <span class="text-xs text-green-400">Zona 1</span>
+                      </div>
+                      <div class="bg-green-900/20 border border-green-900/50 rounded p-1.5 flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.8)]"></div>
+                        <span class="text-xs text-green-400">Zona 2</span>
+                      </div>
+                      <div class="bg-green-900/20 border border-green-900/50 rounded p-1.5 flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.8)]"></div>
+                        <span class="text-xs text-green-400">Zona 3</span>
+                      </div>
+                      <div class="bg-gray-800 border border-gray-700 rounded p-1.5 flex items-center gap-1 opacity-50">
+                        <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+                        <span class="text-xs text-gray-400">Zona 4</span>
+                      </div>
+                    </div>
+                    <div
+                      class="text-center text-xs text-green-500 font-bold bg-green-500/10 py-1.5 rounded mt-2 border border-green-500/30">
+                      ✓ SISTEMA NORMAL
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VERTICAL DIVIDER -->
+              <div class="hidden xl:block w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent mx-2">
+              </div>
+
+              <!-- RIGHT: ENERGY -->
+              <div class="flex-1 flex flex-col">
+                <h3
+                  class="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-yellow-500/20 pb-2">
+                  <i class="fas fa-bolt"></i> Energía y Consumo
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
+
+                  <!-- GENERATOR -->
+                  <div class="sensor-card glass-panel p-4" id="card-generator">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center gap-2">
+                        <div class="text-3xl">⚙️</div>
+                        <div>
+                          <h3 class="font-bold text-base text-white">Generador</h3>
+                          <div class="text-xs text-green-400">● READY</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-center gap-4">
+                      <div class="relative w-28 h-28">
+                        <svg class="transform -rotate-90" width="112" height="112">
+                          <defs>
+                            <linearGradient id="fuelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="glow">
+                              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                              <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                              </feMerge>
+                            </filter>
+                          </defs>
+                          <circle cx="56" cy="56" r="48" stroke="#1e293b" stroke-width="8" fill="none" />
+                          <circle cx="56" cy="56" r="48" stroke="url(#fuelGrad)" stroke-width="8" fill="none"
+                            stroke-dasharray="301" stroke-dashoffset="54" stroke-linecap="round" filter="url(#glow)" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center flex-col">
+                          <span class="text-3xl font-bold text-purple-400">82%</span>
+                          <span class="text-xs text-gray-400">Combustible</span>
+                        </div>
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-sm text-gray-400 mb-1">Batería</div>
+                        <div class="text-xl font-bold text-green-400">27.4V</div>
+                        <div class="h-2 w-full bg-slate-900 rounded-full mt-2 overflow-hidden shadow-inner">
+                          <div
+                            class="h-full bg-gradient-to-r from-green-600 to-green-400 w-[95%] rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LIGHTING (from sidebar) -->
+                  <div class="sensor-card glass-panel p-3" id="card-lighting">
+                    <div class="flex items-center gap-2 mb-2">
+                      <div class="text-2xl">💡</div>
+                      <h3 class="font-bold text-sm text-white">Iluminación</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <div class="flex items-center justify-between bg-slate-800/40 p-1.5 rounded text-xs">
+                        <span>Perimetral</span>
+                        <div class="w-4 h-3 bg-yellow-500 rounded-sm shadow-[0_0_4px_rgba(234,179,8,0.6)]"></div>
+                      </div>
+                      <div class="flex items-center justify-between bg-slate-800/40 p-1.5 rounded text-xs">
+                        <span>T-A</span>
+                        <div class="w-4 h-3 bg-yellow-500 rounded-sm shadow-[0_0_4px_rgba(234,179,8,0.6)]"></div>
+                      </div>
+                      <div class="flex items-center justify-between bg-slate-800/40 p-1.5 rounded text-xs">
+                        <span>Hall</span>
+                        <div class="w-4 h-3 bg-yellow-500 rounded-sm shadow-[0_0_4px_rgba(234,179,8,0.6)]"></div>
+                      </div>
+                      <div class="flex items-center justify-between bg-slate-800/40 p-1.5 rounded text-xs">
+                        <span>Quinchos</span>
+                        <div class="w-4 h-3 bg-gray-700 rounded-sm"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- CLIMATE (moved from top) -->
+                  <div class="sensor-card glass-panel p-4" id="card-climate">
+                    <div class="flex items-center gap-2 mb-3">
+                      <div class="text-3xl">🌡️</div>
+                      <h3 class="font-bold text-base text-white">Temperatura</h3>
+                    </div>
+                    <div class="flex justify-around items-center">
+                      <div class="text-center">
+                        <div class="relative w-24 h-24">
+                          <svg class="transform -rotate-90" width="96" height="96">
+                            <circle cx="48" cy="48" r="40" stroke="#1e293b" stroke-width="6" fill="none" />
+                            <circle cx="48" cy="48" r="40" stroke="#f59e0b" stroke-width="6" fill="none"
+                              stroke-dasharray="251" stroke-dashoffset="113" stroke-linecap="round" />
+                          </svg>
+                          <div class="absolute inset-0 flex items-center justify-center flex-col">
+                            <span class="text-xl font-bold text-amber-400">22</span>
+                            <span class="text-[10px] text-gray-400">°C</span>
+                          </div>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">Exterior</div>
+                      </div>
+                      <div class="text-center">
+                        <div class="relative w-24 h-24">
+                          <svg class="transform -rotate-90" width="96" height="96">
+                            <circle cx="48" cy="48" r="40" stroke="#1e293b" stroke-width="6" fill="none" />
+                            <circle cx="48" cy="48" r="40" stroke="#06b6d4" stroke-width="6" fill="none"
+                              stroke-dasharray="251" stroke-dashoffset="126" stroke-linecap="round" />
+                          </svg>
+                          <div class="absolute inset-0 flex items-center justify-center flex-col">
+                            <span class="text-xl font-bold text-cyan-400">20</span>
+                            <span class="text-[10px] text-gray-400">°C</span>
+                          </div>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">Interior (Hall)</div>
+                      </div>
+                    </div>
+                    <div
+                      class="text-center text-xs text-green-400 bg-green-500/10 py-2 rounded mt-3 border border-green-500/30">
+                      ✓ ICA: BUENO (45)
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+
+
+
+      <!-- NEW VIEW: LOGS -->
+      <div id="view-logs" class="hidden h-full flex flex-col animate-fade-in">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-200 to-gray-400">
+              Registros del Sistema</h2>
+            <p class="text-sm text-gray-400">Historial de eventos, alertas y estado</p>
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="document.getElementById('fullLogContainer').innerHTML = ''"
+              class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded text-sm transition">
+              🗑️ Limpiar
+            </button>
+            <button class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm transition">
+              ⬇️ Exportar CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-grow glass-panel rounded-xl overflow-hidden flex flex-col">
+          <div
+            class="p-3 bg-black/20 border-b border-gray-700 flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <span>Timestamp / Mensaje</span>
+            <span>Tipo</span>
+          </div>
+          <div id="fullLogContainer" class="flex-grow overflow-y-auto p-4 space-y-2 font-mono scroll-smooth">
+            <!-- Logs injected via writeLog() JS -->
+            <div class="text-center text-gray-600 py-10 italic">No hay registros recientes...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: ADVANCED INFO -->
+      <div id="view-advanced" class="hidden space-y-6 animate-fade-in">
+        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300">
+          Información Técnica Detallada</h2>
+
+        <div class="glass-panel rounded-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-black/40 text-xs uppercase tracking-wider text-gray-400 border-b border-gray-700">
+                  <th class="p-4 font-semibold">Sistema</th>
+                  <th class="p-4 font-semibold">Parámetro</th>
+                  <th class="p-4 font-semibold text-right">Valor en Tiempo Real</th>
+                  <th class="p-4 font-semibold text-gray-600">Unidad</th>
+                </tr>
+              </thead>
+              <tbody id="advancedTableBody" class="font-mono text-sm">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- VIEW: ACCESS CONTROL -->
+      <div id="view-access" class="hidden space-y-6 animate-fade-in">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-300">
+              Control de Accesos
+            </h2>
+            <p class="text-sm text-gray-400">Gestión de puertas, portones y áreas comunes</p>
+          </div>
+
+          <div class="flex gap-4 text-xs font-mono bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+            <div class="px-2 border-r border-slate-600">
+              <div class="text-gray-400">ENTRADAS HOY</div>
+              <div class="text-xl font-bold text-white">482</div>
+            </div>
+            <div class="px-2">
+              <div class="text-gray-400">SALIDAS HOY</div>
+              <div class="text-xl font-bold text-white">453</div>
+            </div>
+            <div class="px-2 border-l border-slate-600">
+              <div class="text-gray-400">ALERTAS</div>
+              <div class="text-xl font-bold text-red-400 animate-pulse">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GATES & DOORS -->
+        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Accesos Principales</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- 1. PUERTA PEATONAL -->
+          <div class="sensor-card glass-panel p-2 group">
+            <div class="flex justify-between items-start mb-1">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded bg-emerald-500/10 text-emerald-400 text-xl border border-emerald-500/20">🚪
+                </div>
+                <div>
+                  <h4 class="font-bold text-white">Puerta Peatonal</h4>
+                  <div class="flex items-center gap-1 text-xs text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> CERRADA
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400 mb-1 bg-black/20 p-2 rounded">
+              Último acceso: <span class="text-white font-mono">Hace 2m (Dpto 402)</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition">ABRIR</button>
+              <button class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded text-xs transition"
+                title="Agendar"><i class="fas fa-clock"></i> 📅</button>
+              <button
+                class="px-3 py-1.5 bg-slate-700 hover:bg-red-900/50 hover:text-red-400 text-gray-300 rounded text-xs transition"
+                title="Bloquear"><i class="fas fa-lock"></i> 🔒</button>
+            </div>
+          </div>
+
+          <!-- 2. PUERTA CONSERJERÍA -->
+          <div class="sensor-card glass-panel p-2 group">
+            <div class="flex justify-between items-start mb-1">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded bg-emerald-500/10 text-emerald-400 text-xl border border-emerald-500/20">🛂
+                </div>
+                <div>
+                  <h4 class="font-bold text-white">Conserjería</h4>
+                  <div class="flex items-center gap-1 text-xs text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> CERRADA
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400 mb-1 bg-black/20 p-2 rounded">
+              Último acceso: <span class="text-white font-mono">Hace 15m (Staff)</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition">ABRIR</button>
+              <button class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded text-xs transition"
+                title="Agendar"><i class="fas fa-clock"></i> 📅</button>
+              <button
+                class="px-3 py-1.5 bg-slate-700 hover:bg-red-900/50 hover:text-red-400 text-gray-300 rounded text-xs transition"
+                title="Bloquear"><i class="fas fa-lock"></i> 🔒</button>
+            </div>
+          </div>
+
+          <!-- 3. VEHICULAR -->
+          <div class="sensor-card glass-panel p-2 group">
+            <div class="flex justify-between items-start mb-1">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded bg-blue-500/10 text-blue-400 text-xl border border-blue-500/20">🚗</div>
+                <div>
+                  <h4 class="font-bold text-white">Portón Vehicular</h4>
+                  <div class="flex items-center gap-1 text-xs text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> CERRADO
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400 mb-1 bg-black/20 p-2 rounded">
+              Último acceso: <span class="text-white font-mono">Hace 1m (Patente KLP-99)</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition">ABRIR</button>
+              <button class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded text-xs transition"
+                title="Mantener Abierto">🔓</button>
+              <button
+                class="px-3 py-1.5 bg-slate-700 hover:bg-red-900/50 hover:text-red-400 text-gray-300 rounded text-xs transition"
+                title="Bloquear"><i class="fas fa-lock"></i> 🔒</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMMON AREAS -->
+        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider border-t border-slate-800 pt-4 mt-2">Áreas
+          Comunes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- 4. SALA DE EVENTOS -->
+          <div class="sensor-card glass-panel p-2 group relative overflow-hidden">
+            <div
+              class="absolute top-0 right-0 p-2 opacity-50 text-6xl text-slate-700 pointer-events-none -mr-4 -mt-4 rotate-12">
+              🎉</div>
+            <div class="relative z-10">
+              <h4 class="font-bold text-white mb-1">Sala de Eventos</h4>
+              <span
+                class="text-[10px] px-2 py-0.5 bg-red-500/20 text-red-300 rounded border border-red-500/30">BLOQUEADA</span>
+              <div class="mt-4 flex gap-2">
+                <button
+                  class="flex-1 py-1 bg-slate-700 hover:bg-green-600 text-gray-300 hover:text-white rounded text-xs transition">HABILITAR</button>
+                <button class="px-2 py-1 bg-slate-700 text-gray-300 rounded text-xs">📅</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. LAVANDERÍA A -->
+          <div class="sensor-card glass-panel p-2 group">
+            <h4 class="font-bold text-white mb-1">Lavandería T-A</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-300 rounded border border-green-500/30">ABIERTA</span>
+              <span class="text-[10px] text-gray-400">Cierra 22:00</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded text-xs transition border border-red-500/30">CERRAR</button>
+              <button class="px-2 py-1 bg-slate-700 text-gray-300 rounded text-xs">📅</button>
+            </div>
+          </div>
+
+          <!-- 6. LAVANDERÍA B -->
+          <div class="sensor-card glass-panel p-2 group">
+            <h4 class="font-bold text-white mb-1">Lavandería T-B</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-300 rounded border border-green-500/30">ABIERTA</span>
+              <span class="text-[10px] text-gray-400">Cierra 22:00</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded text-xs transition border border-red-500/30">CERRAR</button>
+              <button class="px-2 py-1 bg-slate-700 text-gray-300 rounded text-xs">📅</button>
+            </div>
+          </div>
+
+          <!-- 7. QUINCHO A -->
+          <div class="sensor-card glass-panel p-2 group">
+            <h4 class="font-bold text-white mb-1">Quincho A</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[10px] px-2 py-0.5 bg-slate-700 text-gray-400 rounded border border-slate-600">SIN
+                USO</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1 bg-green-600/20 hover:bg-green-600/40 text-green-300 rounded text-xs transition border border-green-500/30">ABRIR</button>
+              <button class="px-2 py-1 bg-slate-700 text-gray-300 rounded text-xs">📅</button>
+            </div>
+          </div>
+
+          <!-- 8. QUINCHO B -->
+          <div class="sensor-card glass-panel p-2 group">
+            <h4 class="font-bold text-white mb-1">Quincho B</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[10px] px-2 py-0.5 bg-slate-700 text-gray-400 rounded border border-slate-600">SIN
+                USO</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1 bg-green-600/20 hover:bg-green-600/40 text-green-300 rounded text-xs transition border border-green-500/30">ABRIR</button>
+              <button class="px-2 py-1 bg-slate-700 text-gray-300 rounded text-xs">📅</button>
+            </div>
+          </div>
+
+          <!-- 9. STAFF STORAGE -->
+          <div class="sensor-card glass-panel p-2 group border-l-4 border-l-yellow-500">
+            <h4 class="font-bold text-white mb-1">Bodegas Personal</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-300 rounded border border-green-500/30">ACCESIBLE</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="flex-1 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded text-xs transition border border-red-500/30">BLOQUEAR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: SOLAR PANELS -->
+      <div id="view-solar" class="hidden space-y-6 animate-fade-in">
+        <!-- Header with Fullscreen Button -->
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-300">
+            Panel Solar - Huawei SUN2000
+          </h2>
+          <button id="btnSolarFS"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all text-sm font-medium shadow-lg hover:shadow-blue-500/30 flex items-center gap-2"
+            onclick="toggleSolarFullscreen()">
+            ⛶ Pantalla Completa
+          </button>
+        </div>
+
+        <!-- Header Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="glass-panel p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-400 uppercase">Generación Hoy</div>
+              <div class="text-xl font-bold text-yellow-400" id="solarGenToday">45.2 kWh</div>
+            </div>
+            <div class="text-4xl">⚡</div>
+          </div>
+          <div class="glass-panel p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-400 uppercase">Potencia Actual</div>
+              <div class="text-xl font-bold text-green-400" id="solarCurrentPower">3.8 kW</div>
+            </div>
+            <div class="text-4xl">📈</div>
+          </div>
+          <div class="glass-panel p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-400 uppercase">Ahorro Est.</div>
+              <div class="text-xl font-bold text-emerald-400" id="solarSavings">$ 6.850</div>
+            </div>
+            <div class="text-4xl">💰</div>
+          </div>
+          <div class="glass-panel p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-400 uppercase">CO2 Evitado</div>
+              <div class="text-xl font-bold text-cyan-400" id="solarCo2">18.5 kg</div>
+            </div>
+            <div class="text-4xl">🌱</div>
+          </div>
+        </div>
+
+        <!-- Main Chart & Inverter Status -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Chart Section -->
+          <div class="lg:col-span-2 glass-panel p-4">
+            <h3 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">Curva de Generación</h3>
+            <div class="h-64 sm:h-80 w-full">
+              <canvas id="chartSolar"></canvas>
+            </div>
+          </div>
+
+          <!-- Inverter Technical Data -->
+          <div class="glass-panel p-4 space-y-4">
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Estado Inversor (Huawei SUN2000)
+            </h3>
+
+            <!-- Efficiency Gauge -->
+            <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+              <span class="text-sm text-gray-300">Eficiencia</span>
+              <span class="font-mono text-green-300 font-bold">98.4%</span>
+            </div>
+
+            <!-- Strings -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center bg-black/20 p-2 rounded">
+                <span class="text-xs text-gray-400">String A (Voltage)</span>
+                <span class="font-mono text-yellow-300" id="invStringA">420.5 V</span>
+              </div>
+              <div class="flex justify-between items-center bg-black/20 p-2 rounded">
+                <span class="text-xs text-gray-400">String B (Voltage)</span>
+                <span class="font-mono text-yellow-300" id="invStringB">418.2 V</span>
+              </div>
+            </div>
+
+            <!-- Output -->
+            <div class="space-y-2 mt-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-400">Frecuencia AC</span>
+                <span class="font-mono text-white">50.02 Hz</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-400">Temperatura Interna</span>
+                <span class="font-mono text-red-300" id="invTemp">42.5°C</span>
+              </div>
+            </div>
+
+            <!-- Consumption Display -->
+            <div class="mt-3 pt-3 border-t border-slate-700">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-400">Consumo Eléctrico</span>
+                <span class="font-mono text-orange-400 font-bold" id="solarConsumption">2.4 kW</span>
+              </div>
+              <div class="text-[10px] text-gray-500 mt-1 text-right">Balance: <span class="text-green-400"
+                  id="solarBalance">+1.4 kW</span></div>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded text-center">
+              <span class="text-green-400 font-bold text-xs">🟢 MPPT TRACKING ACTIVO</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- NEW VIEW: CONSUMPTION -->
+      <div id="view-consumption" class="hidden h-full flex flex-col space-y-6 animate-fade-in">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-300">
+              Consumos y Suministros</h2>
+            <p class="text-sm text-gray-400">Consumos Actualizados</p>
+          </div>
+          <button onclick="toggleConsumptionFullscreen()" id="btnConsumptionFS"
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition shadow-lg flex items-center gap-2">
+            <i class="fas fa-expand"></i> Pantalla Completa
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 h-[calc(100vh-200px)]" id="consumption-2d-grid">
+
+          <!-- WATER CHART -->
+          <div class="glass-panel p-6 rounded-xl flex flex-col relative group">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-semibold text-blue-400 flex items-center gap-2">
+                <i class="fas fa-tint"></i> Consumo Hídrico
+              </h3>
+              <div class="text-right">
+                <div class="text-3xl font-bold text-white flex items-baseline gap-1">
+                  <span id="val-water-total">--</span>
+                  <span class="text-sm text-gray-400 font-normal">L</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-grow relative w-full h-full min-h-0">
+              <canvas id="chartConsumptionWater"></canvas>
+            </div>
+          </div>
+
+          <!-- ENERGY CHART -->
+          <div class="glass-panel p-6 rounded-xl flex flex-col relative group">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-semibold text-yellow-400 flex items-center gap-2">
+                <i class="fas fa-bolt"></i> Consumo Eléctrico
+              </h3>
+              <div class="text-right">
+                <div class="text-3xl font-bold text-white flex items-baseline gap-1">
+                  <span id="val-energy-total">--</span>
+                  <span class="text-sm text-gray-400 font-normal">kW</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-grow relative w-full h-full min-h-0">
+              <canvas id="chartConsumptionEnergy"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- VIEW: PREDICTIVE MAP -->
+      <div id="view-map" class="hidden h-[calc(100vh-140px)] animate-fade-in flex flex-col lg:flex-row gap-6">
+
+        <!-- LEFT: VISUAL MAP -->
+        <div class="glass-panel p-6 flex-grow relative overflow-hidden group">
+          <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10">
+          </div>
+
+          <div class="flex justify-between items-center mb-6 relative z-10">
+            <h3 class="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="animate-pulse">●</span> Monitoreo de Riesgo en Vivo
+            </h3>
+            <div
+              class="bg-purple-500/10 border border-purple-500/30 px-3 py-1 rounded text-xs text-purple-300 font-mono">
+              AI ENGINE: ACTIVE
+            </div>
+          </div>
+
+          <!-- MAP CONTAINER (CSS MOCK) -->
+          <div
+            class="relative w-full h-full min-h-[400px] border border-slate-700/50 rounded-xl bg-slate-900/50 p-8 flex items-center justify-center">
+
+            <!-- GRID LINES BACKGROUND -->
+            <div class="absolute inset-0"
+              style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px;">
+            </div>
+
+            <!-- CONDO LAYOUT -->
+            <div class="relative w-full max-w-2xl aspect-square">
+
+              <!-- TORRE A -->
+              <div id="zone-tower-a"
+                class="risk-zone absolute top-20 left-20 w-32 h-56 border-2 border-slate-600 bg-slate-800/80 rounded-lg flex items-center justify-center transition-all duration-1000">
+                <span class="font-bold text-slate-500 pointer-events-none">TORRE A</span>
+              </div>
+
+              <!-- TORRE B -->
+              <div id="zone-tower-b"
+                class="risk-zone absolute top-20 right-20 w-32 h-56 border-2 border-slate-600 bg-slate-800/80 rounded-lg flex items-center justify-center transition-all duration-1000">
+                <span class="font-bold text-slate-500 pointer-events-none">TORRE B</span>
+              </div>
+
+              <!-- POOL / QUINCHOS -->
+              <div id="zone-common"
+                class="risk-zone absolute bottom-32 left-1/2 -translate-x-1/2 w-48 h-32 border-2 border-slate-600 bg-blue-900/10 rounded-full flex items-center justify-center transition-all duration-1000">
+                <span class="text-xs font-bold text-slate-500 pointer-events-none">ÁREAS COMUNES</span>
+              </div>
+
+              <!-- ENTRANCE -->
+              <div id="zone-entrance"
+                class="risk-zone absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-24 border-t-2 border-x-2 border-slate-600 bg-slate-800/80 rounded-t-xl flex items-center justify-center transition-all duration-1000">
+                <span class="font-bold text-slate-500 pointer-events-none">ACCESO PRINCIPAL</span>
+              </div>
+
+              <!-- PERIMETER (Radar Effect) -->
+              <div class="absolute inset-0 rounded-full border border-purple-500/10 animate-[spin_10s_linear_infinite]">
+                <div class="w-full h-1/2 bg-gradient-to-b from-purple-500/5 to-transparent blur-xl"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: INSIGHTS & PREDICTIONS -->
+        <div class="w-full lg:w-96 flex flex-col gap-4">
+
+          <!-- RADAR STATUS -->
+          <div class="glass-panel p-4 flex items-center gap-4">
+            <div
+              class="relative w-16 h-16 rounded-full bg-black border border-green-500/30 flex items-center justify-center overflow-hidden">
+              <div class="absolute inset-0 bg-green-500/20 animate-[ping_2s_linear_infinite]"></div>
+              <div class="w-full h-0.5 bg-green-500 absolute animate-[spin_1.5s_linear_infinite]"></div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 uppercase">Nivel de Amenaza</div>
+              <div class="text-xl font-bold text-green-400">BAJO - NIVEL 1</div>
+            </div>
+          </div>
+
+          <!-- PREDICTION FEED -->
+          <div class="glass-panel p-4 flex-grow flex flex-col">
+            <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">
+              <i class="fas fa-brain"></i> Insights Predictivos
+            </h3>
+
+            <div id="prediction-feed" class="flex-grow overflow-y-auto space-y-3 pr-2 font-mono text-xs">
+              <!-- JS Injected items -->
+              <div class="p-2 rounded bg-slate-800/50 border border-slate-700 text-gray-400">
+                Iniciando análisis de patrones...
+              </div>
+            </div>
+          </div>
+
+          <!-- STATS MINI -->
+          <div class="glass-panel p-4">
+            <div class="text-xs text-gray-400 mb-2">Probabilidad de Incidente (24h)</div>
+            <div class="w-full bg-slate-800 rounded-full h-2 mb-1">
+              <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: 12%"></div>
+            </div>
+            <div class="text-right text-xs text-purple-300">12% (Estable)</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="view-residents" class="hidden space-y-6 animate-fade-in">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-white">Directorio de Residentes</h2>
+          <div class="relative">
+            <input type="text" id="residentSearch" placeholder="Buscar por nombre o depto..."
+              class="bg-slate-800/50 border border-slate-600 rounded-lg py-2 px-4 pl-10 text-white focus:outline-none focus:border-blue-500 w-64">
+            <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-xl overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-black/40 text-xs uppercase tracking-wider text-gray-400 border-b border-gray-700">
+                <th class="p-4">Torre</th>
+                <th class="p-4">Depto</th>
+                <th class="p-4">Nombre</th>
+                <th class="p-4">Contacto</th>
+                <th class="p-4">Email</th>
+              </tr>
+            </thead>
+            <tbody id="residentsTableBody" class="text-sm">
+              <!-- JS Filled -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW: STATS -->
+      <div id="view-stats" class="hidden space-y-6 animate-fade-in">
+        <h2 class="text-2xl font-bold text-white">Estadísticas de Monitoreo</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Chart 1: Energy -->
+          <div class="glass-panel p-6 rounded-xl">
+            <h3 class="text-lg font-semibold mb-4 text-yellow-400">Consumo Energético (kWh)</h3>
+            <canvas id="chartEnergy"></canvas>
+          </div>
+
+          <!-- Chart 2: Alarms -->
+          <div class="glass-panel p-6 rounded-xl">
+            <h3 class="text-lg font-semibold mb-4 text-red-400">Frecuencia de Alertas</h3>
+            <canvas id="chartAlarms"></canvas>
+          </div>
+
+          <!-- Chart 3: Water -->
+          <div class="glass-panel p-6 rounded-xl">
+            <h3 class="text-lg font-semibold mb-4 text-blue-400">Consumo Hídrico (L)</h3>
+            <canvas id="chartWater"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: USER PROFILE -->
+      <div id="view-profile" class="hidden animate-fade-in">
+        <!-- Hero Section -->
+        <div class="glass-panel relative overflow-hidden rounded-2xl mb-6">
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-cyan-900/40 opacity-50"></div>
+          <div class="relative p-8 flex flex-col md:flex-row items-center gap-6 z-10">
+            <div
+              class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center text-4xl text-white shadow-2xl border-4 border-slate-900">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="text-center md:text-left">
+              <h2 class="text-3xl font-bold text-white mb-1" id="profileName">Cargando...</h2>
+              <div class="flex items-center justify-center md:justify-start gap-2">
+                <span
+                  class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold uppercase tracking-wider"
+                  id="profileRole">...</span>
+                <span
+                  class="px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold uppercase tracking-wider">Activo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Contact Info -->
+          <div class="glass-panel p-6 rounded-xl space-y-4">
+            <h3 class="text-lg font-bold text-gray-200 border-b border-gray-700 pb-2 mb-4">Información de Contacto</h3>
+
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-gray-400"><i
+                  class="fas fa-envelope"></i></div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Correo Electrónico</div>
+                <div class="text-sm font-mono text-gray-300" id="profileEmail">...</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-gray-400"><i
+                  class="fas fa-phone"></i></div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase">Teléfono</div>
+                <div class="text-sm font-mono text-gray-300" id="profilePhone">...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Condo Info -->
+          <div class="glass-panel p-6 rounded-xl space-y-4">
+            <h3 class="text-lg font-bold text-gray-200 border-b border-gray-700 pb-2 mb-4">Datos del Condominio</h3>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-800/40 p-3 rounded-lg">
+                <div class="text-xs text-gray-500 uppercase mb-1">Torre</div>
+                <div class="text-xl font-bold text-white" id="profileTower">...</div>
+              </div>
+              <div class="bg-slate-800/40 p-3 rounded-lg">
+                <div class="text-xs text-gray-500 uppercase mb-1">Unidad</div>
+                <div class="text-xl font-bold text-cyan-400" id="profileUnit">...</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/40 p-3 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Estacionamiento</div>
+                <div class="text-lg font-bold text-white" id="profileParking">...</div>
+              </div>
+              <i class="fas fa-car text-gray-600 text-xl"></i>
+            </div>
+          </div>
+
+          <!-- Permissions / Actions -->
+          <div class="glass-panel p-6 rounded-xl flex flex-col h-full">
+            <h3 class="text-lg font-bold text-gray-200 border-b border-gray-700 pb-2 mb-4">Acciones de Cuenta</h3>
+
+            <div class="space-y-3 flex-grow">
+              <button onclick="editProfile()"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2">
+                <i class="fas fa-edit"></i> Editar Perfil
+              </button>
+              <button onclick="changePassword()"
+                class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg font-semibold transition flex items-center justify-center gap-2">
+                <i class="fas fa-key"></i> Cambiar Contraseña
+              </button>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-700 text-center">
+              <p class="text-xs text-gray-500">Último acceso: Hoy, 16:20</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </main>
+  </div>
+
   <script>
-    // === AUTENTICACIÓN ===
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/login.html';
-    }
+    // === AUTH & PERNIT ===
+    let userPermissions = {};
+    let userData = {};
 
-    const socket = io({ auth: { token } });
-    const localVideo = document.getElementById('localVideo');
-    const camerasGrid = document.getElementById('camerasGrid');
-    const logContainer = document.getElementById('logContainer');
-    const expandedView = document.getElementById('expandedView');
-    const expandedTitle = document.getElementById('expandedTitle');
-    const expandedCamName = document.getElementById('expandedCamName');
-    const expandedLockBtn = document.getElementById('expandedLockBtn');
-    const expandedFireBtn = document.getElementById('expandedFireBtn');
-    const expandedSoundBtn = document.getElementById('expandedSoundBtn');
-    const expandedVideo = document.getElementById('expandedVideo');
-    const expandedVideoPlaceholder = document.getElementById('expandedVideoPlaceholder');
-    const expandedVideoContainer = document.getElementById('expandedVideoContainer');
+    // Check authentication and load permissions
+    async function checkAuthAndPermissions() {
+      console.log('🔐 Starting auth check...');
+      try {
+        // Check if user is authenticated
+        console.log('📡 Fetching /api/auth/session...');
+        const sessionRes = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        console.log('📡 Session response status:', sessionRes.status);
 
-    let currentExpandedCam = null;
-    let devicesState = {};
-    let currentSection = 'all';
-    let SECTIONS = {};
-    let CAMERAS_CONFIG = {};
-    let cameraStatus = {};
-    let janusStreams = [];
+        const sessionData = await sessionRes.json();
+        console.log('📡 Session data:', sessionData);
 
-    // Cargar configuración desde el backend
-    fetch('/api/config', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      CAMERAS_CONFIG = data.sections;
-      SECTIONS = {};
-      data.sections.forEach(section => {
-        SECTIONS[section.key] = {
-          name: section.name,
-          range: section.range
-        };
-      });
-      renderTabs();
-      renderCameras(devicesState);
-    })
-    .catch(err => {
-      console.error('Error al cargar configuración:', err);
-      alert('Error al cargar configuración del sistema');
-    });
+        if (!sessionData.authenticated) {
+          console.warn('⚠️ Not authenticated, redirecting to login');
+          window.location.href = '/login.html';
+          return;
+        }
 
-    // Cargar streams de Janus
-    fetch('/api/janus-streams', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      janusStreams = data.streams;
-      console.log('Streams de Janus cargados:', janusStreams);
-    })
-    .catch(err => {
-      console.error('Error al cargar streams de Janus:', err);
-    });
+        console.log('✅ Authenticated as:', sessionData.user.username);
+        userData = sessionData.user;
 
-    // Renderizar pestañas dinámicamente
-    function renderTabs() {
-      const container = document.getElementById('tabsContainer');
-      container.innerHTML = '';
+        // Get user permissions
+        console.log('📡 Fetching user permissions...');
+        const permRes = await fetch('/api/user/permissions', { credentials: 'same-origin' });
+        console.log('📡 Permissions response status:', permRes.status);
 
-      CAMERAS_CONFIG.forEach(section => {
-        const start = section.range[0];
-        const end = section.range[1];
-        const count = end - start + 1;
+        const permData = await permRes.json();
+        console.log('✅ Permissions:', permData);
 
-        const btn = document.createElement('button');
-        btn.className = `tab-btn ${section.key === 'all' ? 'active' : ''}`;
-        btn.dataset.section = section.key;
-        btn.textContent = `${section.name} (${count})`;
-        btn.title = section.description;
+        userPermissions = permData.permissions;
 
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentSection = btn.dataset.section;
-          renderCameras(devicesState);
-        });
+        // Apply permissions to UI
+        applyPermissions();
 
-        container.appendChild(btn);
-      });
-    }
+        // Update profile with user data
+        updateUserProfile();
 
-    function logout() {
-      if (confirm('¿Deseas cerrar sesión?')) {
-        localStorage.removeItem('token');
+        // ✅ AUTH SUCCESSFUL - NOW initialize Socket.IO
+        console.log('✅ Auth successful, initializing Socket.IO...');
+        socket = io();
+
+        // Setup socket event listeners
+        setupSocketListeners();
+
+        // Initialize cameras, residents, and devices
+        console.log('📸 Initializing cameras and loading data...');
+        initCameras();
+        fetchResidents();
+        fetchDevices();
+
+      } catch (error) {
+        console.error('❌ Auth check failed:', error);
+        console.error('Stack:', error.stack);
         window.location.href = '/login.html';
       }
     }
 
-    // === BOTÓN LIMPIAR VISTA ===
-    function clearLogsUI() {
-      if (confirm('¿Limpiar la vista del registro? (Los datos reales se mantienen)')) {
-        logContainer.innerHTML = '<div class="log-entry info">Registro limpiado</div>';
+    // Apply permissions to hide/show navigation items
+    // Apply permissions to hide/show navigation items
+    function applyPermissions() {
+      // Navigation items to permission mapping
+      const navPermissions = {
+        'nav-sensors': 'sensors',
+        'nav-access': 'accessControl',
+        'nav-solar': 'solar',
+        'nav-map': 'map',
+        'nav-stats': 'stats',
+        'nav-logs': 'logs'
+      };
+
+      for (const [navId, permission] of Object.entries(navPermissions)) {
+        const navElement = document.getElementById(navId);
+        if (navElement) {
+          if (userPermissions[permission]) {
+            navElement.style.display = 'flex'; // Show
+          } else {
+            navElement.style.display = 'none'; // Hide
+          }
+        }
+      }
+
+      // Fix: Hide Header Alerts if user cannot access sensors/details
+      const headerAlerts = document.getElementById('headerAlerts');
+      if (headerAlerts) {
+        // Most alerts link to sensors, so we use that as the gatekeeper
+        if (userPermissions['sensors']) {
+          headerAlerts.classList.remove('hidden');
+          headerAlerts.classList.add('md:flex'); // Restore original classes
+        } else {
+          headerAlerts.classList.add('hidden');
+          headerAlerts.classList.remove('md:flex');
+        }
       }
     }
 
-    // === LOGS PERSISTENTES ===
-    function addLogFromServer(logLine) {
+    // Update user profile section
+    function updateUserProfile() {
+      const profileName = document.getElementById('profileName');
+      const profileRole = document.getElementById('profileRole');
+      const profileEmail = document.getElementById('profileEmail');
+      const profilePhone = document.getElementById('profilePhone');
+      const profileTower = document.getElementById('profileTower');
+      const profileUnit = document.getElementById('profileUnit');
+      const profileParking = document.getElementById('profileParking');
+
+      if (profileName) profileName.textContent = userData.name || 'Usuario';
+      if (profileRole) {
+        const roleNames = {
+          'admin': 'Administrador',
+          'committee': 'Comité',
+          'user': 'Residente'
+        };
+        profileRole.textContent = roleNames[userData.role] || userData.role;
+      }
+      if (profileEmail) profileEmail.textContent = userData.email || '-';
+      if (profilePhone) profilePhone.textContent = '+56 9 XXXX XXXX';
+
+      // Parse unit string (e.g., "Torre A - 501")
+      if (userData.unit) {
+        const parts = userData.unit.split(' - ');
+        if (parts.length === 2) {
+          if (profileTower) profileTower.textContent = parts[0].replace('Torre ', '');
+          if (profileUnit) profileUnit.textContent = parts[1];
+          if (profileParking) profileParking.textContent = parts[1];
+        } else {
+          if (profileTower) profileTower.textContent = 'N/A';
+          if (profileUnit) profileUnit.textContent = userData.unit;
+          if (profileParking) profileParking.textContent = 'N/A';
+        }
+      } else {
+        if (profileTower) profileTower.textContent = 'N/A';
+        if (profileUnit) profileUnit.textContent = 'N/A';
+        if (profileParking) profileParking.textContent = 'N/A';
+      }
+    }
+
+    // Logout function
+    async function logout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      } catch (error) {
+        console.error('Logout failed:', error);
+        window.location.href = '/login.html';
+      }
+    }
+
+
+    // ===================================================
+    // CRITICAL: RUN AUTH CHECK FIRST, BEFORE ANYTHING ELSE
+    // ===================================================
+    console.log('%c🔐 AUTHENTICATION CHECK STARTING', 'background: purple; color: white; font-size: 16px; padding: 5px;');
+
+    // Run auth check immediately
+    checkAuthAndPermissions();
+
+    // Socket.IO will be initialized AFTER successful auth
+    let socket = null;
+
+    // === DOM ELEMENTS ===
+    const localVideo = document.getElementById('localVideo');
+    const logContainer = document.getElementById('logContainer');
+    const connectionBanner = document.getElementById('connectionBanner');
+
+
+
+    // Views
+    const viewCameras = document.getElementById('view-cameras');
+
+    // DEBUG HELPER
+    function logDebug(msg) {
+      console.log('[DEBUG]', msg);
+      const d = document.createElement('div');
+      d.textContent = `⚠️ DEBUG: ${msg}`;
+      d.className = 'text-yellow-300 font-mono text-xs border-l-2 border-yellow-500 pl-2 my-1';
+      if (logContainer) logContainer.prepend(d);
+    }
+
+    // === CAMERA INIT LOGIC ===
+    async function initCameras() {
+      const camerasGrid = document.getElementById('camerasGrid');
+      if (!camerasGrid) {
+        console.error('❌ camerasGrid element not found in DOM!');
+        return;
+      }
+
+      try {
+        console.log('🌐 ABOUT TO FETCH /api/config');
+        console.log('   Document cookie:', document.cookie);
+        const res = await fetch('/api/config', { credentials: 'same-origin' });
+        console.log('✅ /api/config response status:', res.status);
+        const config = await res.json();
+        const metadata = config.cameras.metadata;
+        const totalCams = config.cameras.total; // or use Object.keys(metadata).length
+
+        // Extract sections for tabs
+        if (config.cameras.sections) {
+          configSections = config.cameras.sections;
+        }
+
+        camerasGrid.innerHTML = '';
+
+        // Sort keys to ensure order 1..N
+        const sortedIds = Object.keys(metadata).sort((a, b) => {
+          const numA = parseInt(a.replace('cam', ''));
+          const numB = parseInt(b.replace('cam', ''));
+          return numA - numB;
+        });
+
+        sortedIds.forEach(camId => {
+          const camData = metadata[camId];
+          const num = camId.replace('cam', '');
+
+          const card = document.createElement('div');
+          card.id = `card-${camId}`; // Required for motion alerts
+          card.className = 'camera-card relative bg-black rounded-xl overflow-hidden shadow-lg aspect-video group border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer';
+          card.dataset.camId = num;
+          card.dataset.section = camData.section || 'exterior'; // fallback
+
+          card.onclick = () => expandCamera(camId);
+
+          card.innerHTML = `
+            <video id="mini-${num}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" autoplay muted playsinline></video>
+            
+            <!-- Overlay Info -->
+            <div class="absolute top-0 left-0 w-full p-2 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start pointer-events-none">
+                <div>
+                    <div class="text-xs font-bold text-white shadow-black drop-shadow-md flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        CAM ${num}
+                    </div>
+                    <div class="text-[10px] text-gray-300 font-medium truncate max-w-[120px]">${camData.name || 'Cámara ' + num}</div>
+                </div>
+                <div class="flex gap-1">
+                    ${camData.features && camData.features.ptz ? '<i class="fas fa-arrows-alt text-[10px] text-blue-400" title="PTZ"></i>' : ''}
+                    ${camData.features && camData.features.audio ? '<i class="fas fa-microphone text-[10px] text-green-400" title="Audio"></i>' : ''}
+                </div>
+            </div>
+            
+            <!-- Lock Status (hidden by default) -->
+            <div id="lock-${camId}" class="hidden absolute bottom-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded shadow-lg animate-pulse z-10">
+                <i class="fas fa-lock"></i> BLOQUEADO
+            </div>
+            
+            <!-- Analytics Overlay (Motion, Person, etc.) -->
+            <div id="overlay-${camId}" class="absolute inset-0 pointer-events-none border-2 border-transparent transition-colors duration-300"></div>
+            <div id="label-${camId}" class="hidden absolute bottom-2 left-2 bg-blue-600/90 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                Movimiento
+            </div>
+          `;
+
+          camerasGrid.appendChild(card);
+        });
+
+        console.log(`✅ ${sortedIds.length} cameras initialized`);
+
+        // Render section tabs if sections were loaded
+        renderTabs();
+
+        // Initialize lazy loading observer
+        if (window.setupCameraObserver) {
+          window.setupCameraObserver();
+        }
+
+      } catch (error) {
+        console.error('Error initializing cameras:', error);
+        logDebug('Error loading camera config');
+      }
+    }
+
+    // Residents fetcher
+    async function fetchResidents() {
+      console.log('👥 Fetching residents...');
+      try {
+        console.log('🌐 ABOUT TO FETCH /api/residents');
+        console.log('   Document cookie:', document.cookie);
+        const res = await fetch('/api/residents', { credentials: 'same-origin' });
+        console.log('✅ /api/residents response status:', res.status);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const residents = await res.json();
+        console.log('✅ Residents loaded:', residents.length);
+        renderResidents(residents);
+      } catch (e) {
+        console.error('❌ Error fetching residents:', e);
+        logDebug('Error loading residents');
+      }
+    }
+
+    async function fetchDevices() {
+      console.log('📡 Fetching devices...');
+      try {
+        const res = await fetch('/api/devices', { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const devices = await res.json();
+        console.log('✅ Devices loaded:', Object.keys(devices).length);
+        devicesState = devices; // Update global state
+        // Update UI if needed (e.g. locks)
+      } catch (e) {
+        console.error('❌ Error fetching devices:', e);
+      }
+    }
+
+    function renderResidents(list) {
+      const container = document.getElementById('residentsTableBody');
+      if (!container) {
+        console.error('❌ residentsTableBody not found!');
+        return;
+      }
+      container.innerHTML = '';
+      list.forEach(r => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-700 hover:bg-slate-700/30 transition text-gray-300';
+        row.innerHTML = `
+                <td class="px-4 py-3 font-mono text-cyan-400 font-bold">${r.tower || 'A'}</td>
+                <td class="px-4 py-3 font-mono text-white">${r.unit}</td>
+                <td class="px-4 py-3 font-medium">${r.name}</td>
+                <td class="px-4 py-3 text-sm">${r.phone || '-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-400">${r.email || '-'}</td>
+             `;
+        container.appendChild(row);
+      });
+    }
+
+
+    const viewSensors = document.getElementById('view-sensors');
+    const viewAdvanced = document.getElementById('view-advanced');
+    const viewResidents = document.getElementById('view-residents');
+    const viewStats = document.getElementById('view-stats');
+
+    const navCameras = document.getElementById('nav-cameras');
+    const navSensors = document.getElementById('nav-sensors');
+    const navAdvanced = document.getElementById('nav-advanced');
+    const navResidents = document.getElementById('nav-residents');
+    const navStats = document.getElementById('nav-stats');
+
+    // New additions (Ensuring they are defined)
+    const viewLogs = document.getElementById('view-logs');
+    const navLogs = document.getElementById('nav-logs');
+    const viewAccess = document.getElementById('view-access');
+    const navAccess = document.getElementById('nav-access');
+    const viewSolar = document.getElementById('view-solar');
+    const navSolar = document.getElementById('nav-solar');
+    const viewMap = document.getElementById('view-map');
+    const navMap = document.getElementById('nav-map');
+    const viewProfile = document.getElementById('view-profile'); // New
+    const viewConsumption = document.getElementById('view-consumption');
+    const navConsumption = document.getElementById('nav-consumption');
+
+    // Stats
+    let energyChart = null;
+    let alarmChart = null;
+    let waterChart = null;
+
+    // DEBUG HELPER
+    function logDebug(msg) {
+      console.log('[DEBUG]', msg);
+      const d = document.createElement('div');
+      d.textContent = `⚠️ DEBUG: ${msg}`;
+      d.className = 'text-yellow-300 font-mono text-xs border-l-2 border-yellow-500 pl-2 my-1';
+      if (logContainer) logContainer.prepend(d);
+    }
+    // Camera Stuff
+    const camerasGrid = document.getElementById('camerasGrid');
+    const cameraFilterTabs = document.getElementById('cameraFilterTabs');
+    const expandedView = document.getElementById('expandedView');
+    const expandedVideo = document.getElementById('expandedVideo');
+    const expandedTitle = document.getElementById('expandedTitle');
+    const expandedLockBtn = document.getElementById('expandedLockBtn');
+
+    // Sensor Stuff
+    const fenceVoltage = document.getElementById('fenceVoltage');
+    const fenceStatusIcon = document.getElementById('fenceStatusIcon');
+    const tankLevelFill = document.getElementById('tankLevelFill');
+    const tankLevelText = document.getElementById('tankLevelText');
+    const pump1Status = document.getElementById('pump1Status');
+    const pump2Status = document.getElementById('pump2Status');
+    const acFreq = document.getElementById('acFreq');
+    const acCurrent = document.getElementById('acCurrent');
+    const acRpm = document.getElementById('acRpm');
+    const acDriveStatusIcon = document.getElementById('acDriveStatusIcon');
+    const smokeGrid = document.getElementById('smokeGrid');
+
+    // State
+    let devicesState = {};
+    let configSections = [];
+    let currentCameraSection = 'all';
+    let currentExpandedCam = null;
+    let cameraStatus = {};
+
+
+
+    // Charts Instances
+    let chartConsumptionWater = null;
+    let chartConsumptionEnergy = null;
+    let consumptionFullscreen = false;
+
+    // Helper to persist alerts in fullscreen
+    function updateFullscreenAlerts(viewElement, isFullscreen) {
+      // Remove existing clone if any
+      const existing = viewElement.querySelector('.fullscreen-alerts-clone');
+      if (existing) existing.remove();
+
+      if (isFullscreen) {
+        const original = document.getElementById('headerAlerts');
+        if (original) {
+          const clone = original.cloneNode(true);
+          clone.id = ''; // Remove ID to avoid duplicate IDs
+          clone.classList.add('fullscreen-alerts-clone', 'mr-4', 'scale-90'); // Add identifier and slight scale down
+          clone.classList.remove('hidden'); // Ensure visibility
+          clone.style.display = 'flex'; // Enforce flex
+
+          // Find the header container to insert into (usually the parent of the fullscreen button)
+          const fsBtn = viewElement.querySelector('button[onclick*="Fullscreen"]');
+          if (fsBtn && fsBtn.parentNode) {
+            // Check for report buttons container (specific to Sensors view)
+            // It usually contains text like 'Semanal' or 'Mensual' or just checking siblings
+            const siblings = Array.from(fsBtn.parentNode.children);
+            const reportContainer = siblings.find(el => el.textContent.includes('Semanal') && el.tagName === 'DIV');
+
+            if (reportContainer) {
+              fsBtn.parentNode.insertBefore(clone, reportContainer);
+            } else {
+              fsBtn.parentNode.insertBefore(clone, fsBtn);
+            }
+          }
+        }
+      }
+    }
+
+    // Fullscreen Toggle for Consumption
+    function toggleConsumptionFullscreen() {
+      const view = document.getElementById('view-consumption');
+      const btn = document.getElementById('btnConsumptionFS');
+      const appLayout = document.querySelector('.app-layout');
+      const header = document.querySelector('.app-header');
+      const sidebar = document.querySelector('.app-sidebar');
+
+      consumptionFullscreen = !consumptionFullscreen;
+
+      if (consumptionFullscreen) {
+        view.classList.add('sensors-fullscreen'); // Reuse existing fullscreen class
+        header.classList.add('hide-in-fullscreen-sensors');
+        sidebar.classList.add('hide-in-fullscreen-sensors');
+        btn.innerHTML = '<i class="fas fa-compress"></i> Salir Pantalla Completa';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        btn.classList.add('bg-red-600', 'hover:bg-red-500');
+        updateFullscreenAlerts(view, true);
+      } else {
+        view.classList.remove('sensors-fullscreen');
+        header.classList.remove('hide-in-fullscreen-sensors');
+        sidebar.classList.remove('hide-in-fullscreen-sensors');
+        btn.innerHTML = '<i class="fas fa-expand"></i> Pantalla Completa';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-500');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        updateFullscreenAlerts(view, false);
+      }
+    }
+
+    // Fullscreen Toggle for Solar
+    let solarFullscreen = false;
+    function toggleSolarFullscreen() {
+      const view = document.getElementById('view-solar');
+      const btn = document.getElementById('btnSolarFS');
+      const appLayout = document.querySelector('.app-layout');
+      const header = document.querySelector('.app-header');
+      const sidebar = document.querySelector('.app-sidebar');
+
+      solarFullscreen = !solarFullscreen;
+
+      if (solarFullscreen) {
+        view.classList.add('sensors-fullscreen');
+        header.classList.add('hide-in-fullscreen-sensors');
+        sidebar.classList.add('hide-in-fullscreen-sensors');
+        btn.innerHTML = '✕ Salir Pantalla Completa';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        btn.classList.add('bg-red-600', 'hover:bg-red-500');
+        updateFullscreenAlerts(view, true);
+      } else {
+        view.classList.remove('sensors-fullscreen');
+        header.classList.remove('hide-in-fullscreen-sensors');
+        sidebar.classList.remove('hide-in-fullscreen-sensors');
+        btn.innerHTML = '⛶ Pantalla Completa';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-500');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        updateFullscreenAlerts(view, false);
+      }
+    }
+
+    // Initialize 2D Charts
+    function init2DConsumptionCharts() {
+      if (chartConsumptionWater || chartConsumptionEnergy) return; // Already init
+
+      const ctxWater = document.getElementById('chartConsumptionWater')?.getContext('2d');
+      const ctxEnergy = document.getElementById('chartConsumptionEnergy')?.getContext('2d');
+
+      if (ctxWater) {
+        chartConsumptionWater = new Chart(ctxWater, {
+          type: 'bar',
+          data: {
+            labels: ['Consumo Actual (L)', 'Promedio Diario (L)', 'Límite (L)'],
+            datasets: [{
+              label: 'Litros',
+              data: [8400, 4500, 20000],
+              backgroundColor: ['#3b82f6', '#94a3b8', '#dc2626'],
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+              x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+
+        // Init text
+        const totalElem = document.getElementById('val-water-total');
+        if (totalElem) totalElem.textContent = '8,400';
+      }
+
+      if (ctxEnergy) {
+        chartConsumptionEnergy = new Chart(ctxEnergy, {
+          type: 'doughnut',
+          data: {
+            labels: ['Comunidad', 'Torre A', 'Torre B'],
+            datasets: [{
+              data: [15, 45, 30],
+              backgroundColor: ['#f97316', '#ef4444', '#10b981'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { color: '#e2e8f0' } }
+            },
+            cutout: '70%'
+          }
+        });
+
+        // Init text
+        const totalElem = document.getElementById('val-energy-total');
+        if (totalElem) totalElem.textContent = '90.0';
+      }
+    }
+
+    // Grid State
+    // Default to 3 columns if not set
+    let currentGridCols = parseInt(localStorage.getItem('gridPrefs')) || 3;
+
+    // === GRID CONTROLS ===
+    function setGrid(cols) {
+      currentGridCols = cols;
+      localStorage.setItem('gridPrefs', cols);
+
+      const camerasGrid = document.getElementById('camerasGrid');
+      if (!camerasGrid) return;
+
+      // Update grid classes - preserve base grid display
+      camerasGrid.className = 'camera-grid grid gap-4 transition-all duration-300';
+      if (cols === 2) {
+        camerasGrid.classList.add('grid-cols-1', 'md:grid-cols-2');
+      } else if (cols === 3) {
+        camerasGrid.classList.add('grid-cols-1', 'md:grid-cols-2', 'xl:grid-cols-3');
+      } else if (cols === 4) {
+        camerasGrid.classList.add('grid-cols-2', 'md:grid-cols-3', 'xl:grid-cols-4');
+      }
+
+      // Update button states
+      ['btnGrid2', 'btnGrid3', 'btnGrid4'].forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.classList.remove('bg-cyan-600', 'text-white', 'bg-slate-700', 'text-gray-400');
+        if (btnId === `btnGrid${cols}`) {
+          btn.classList.add('bg-cyan-600', 'text-white');
+        } else {
+          btn.classList.add('bg-slate-700', 'text-gray-400');
+        }
+      });
+    }
+
+    // Apply saved grid preference
+    if (currentGridCols) {
+      setTimeout(() => setGrid(currentGridCols), 100);
+    }
+
+    // === CAMERA SECTION FILTERING ===
+    function renderTabs() {
+      const cameraFilterTabs = document.getElementById('cameraFilterTabs');
+      if (!cameraFilterTabs || !configSections || configSections.length === 0) return;
+
+      cameraFilterTabs.innerHTML = '';
+
+      // "All" tab added via configSections
+
+      // Add section tabs
+      configSections.forEach(section => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1 text-sm rounded transition ml-1 ${currentCameraSection === section.key ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'}`;
+        btn.textContent = section.name;
+        btn.onclick = () => filterCameraSection(section.key);
+        cameraFilterTabs.appendChild(btn);
+      });
+    }
+
+    function filterCameraSection(sectionKey) {
+      currentCameraSection = sectionKey;
+      renderTabs();
+
+      const camerasGrid = document.getElementById('camerasGrid');
+      if (!camerasGrid) return;
+
+      const section = configSections.find(s => s.key === sectionKey);
+
+      const allCards = camerasGrid.querySelectorAll('.camera-card');
+      allCards.forEach(card => {
+        if (sectionKey === 'all') {
+          card.style.display = '';
+        } else if (section && section.range) {
+          // Filter by numeric range (Digital vs Analog)
+          const id = parseInt(card.dataset.camId);
+          const [min, max] = section.range;
+          card.style.display = (id >= min && id <= max) ? '' : 'none';
+        } else {
+          // Fallback to dataset section (e.g. exterior)
+          const cardSection = card.dataset.section;
+          card.style.display = (cardSection === sectionKey) ? '' : 'none';
+        }
+      });
+    }
+
+
+    // === LAYOUT CONTROLS ===
+    function toggleSidebar() {
+      const layout = document.querySelector('.app-layout');
+      layout.classList.toggle('fullscreen');
+
+      // Force resize event to fix charts/maps if needed
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 350);
+    }
+
+    // === VIEW NAVIGATION ===
+    let currentHighlightedCard = null;
+
+    function clearHighlights() {
+      if (currentHighlightedCard) {
+        const el = document.getElementById(currentHighlightedCard);
+        if (el) {
+          el.classList.remove('alarm-active', 'scale-[1.02]');
+          // el.classList.add('glass-panel'); // Preserved from original
+        }
+        currentHighlightedCard = null;
+      }
+    }
+
+    function highlightSensor(view, cardId) {
+      switchView(view);
+
+      setTimeout(() => {
+        const el = document.getElementById(cardId);
+        if (el) {
+          clearHighlights(); // Clear previous
+
+          // Add highlight styles - RED FLASHING BORDER
+          el.classList.add('alarm-active', 'transition-all', 'duration-500', 'scale-[1.02]');
+
+          // Scroll into view
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          currentHighlightedCard = cardId;
+        }
+      }, 100); // Small delay to allow view transition
+    }
+
+    // === FULLSCREEN SENSORS TOGGLE ===
+    let sensorsFullscreenActive = false;
+
+    function toggleSensorsFullscreen() {
+      const sensorsView = document.getElementById('view-sensors');
+      const btn = document.getElementById('fullscreenToggleBtn');
+      const appLayout = document.querySelector('.app-layout');
+      const header = document.querySelector('.app-header');
+      const sidebar = document.querySelector('.app-sidebar');
+
+      sensorsFullscreenActive = !sensorsFullscreenActive;
+
+      if (sensorsFullscreenActive) {
+        sensorsView.classList.add('sensors-fullscreen');
+        header.classList.add('hide-in-fullscreen-sensors');
+        sidebar.classList.add('hide-in-fullscreen-sensors');
+        btn.innerHTML = '✕ Salir Pantalla Completa';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        btn.classList.add('bg-red-600', 'hover:bg-red-500');
+        updateFullscreenAlerts(sensorsView, true);
+      } else {
+        sensorsView.classList.remove('sensors-fullscreen');
+        header.classList.remove('hide-in-fullscreen-sensors');
+        sidebar.classList.remove('hide-in-fullscreen-sensors');
+        btn.innerHTML = '⛶ Pantalla Completa';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-500');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        updateFullscreenAlerts(sensorsView, false);
+      }
+    }
+
+    window.switchView = (viewName) => {
+      clearHighlights(); // Always clear highlights on view switch
+
+      // Hide all views
+      [viewCameras, viewSensors, viewAdvanced, viewResidents, viewStats, viewLogs, viewAccess, viewSolar, viewMap, viewProfile, viewConsumption].forEach(el => {
+        if (el) el.classList.add('hidden');
+      });
+
+      // Deactivate all navs
+      [navCameras, navSensors, navAdvanced, navResidents, navStats, navLogs, navAccess, navSolar, navMap, navConsumption].forEach(el => {
+        if (el) el.classList.remove('active');
+      });
+
+      if (viewName === 'cameras') {
+        viewCameras.classList.remove('hidden');
+        navCameras.classList.add('active');
+      } else if (viewName === 'sensors') {
+        viewSensors.classList.remove('hidden');
+        navSensors.classList.add('active');
+      } else if (viewName === 'advanced') {
+        viewAdvanced.classList.remove('hidden');
+        navAdvanced.classList.add('active');
+      } else if (viewName === 'residents') {
+        viewResidents.classList.remove('hidden');
+        navResidents.classList.add('active');
+        // Residents loaded on init
+      } else if (viewName === 'stats') {
+        viewStats.classList.remove('hidden');
+        navStats.classList.add('active');
+        initCharts();
+      } else if (viewName === 'logs') {
+        viewLogs.classList.remove('hidden');
+        navLogs.classList.add('active');
+      } else if (viewName === 'access') {
+        viewAccess.classList.remove('hidden');
+        navAccess.classList.add('active');
+      } else if (viewName === 'solar') {
+        viewSolar.classList.remove('hidden');
+        navSolar.classList.add('active');
+        initSolarDashboard();
+      } else if (viewName === 'map') { // New
+        viewMap.classList.remove('hidden');
+        navMap.classList.add('active');
+        initPredictiveMap();
+      } else if (viewName === 'profile') { // New
+        viewProfile.classList.remove('hidden');
+        loadUserProfile();
+      } else if (viewName === 'consumption') {
+        viewConsumption.classList.remove('hidden');
+        navConsumption.classList.add('active');
+        setTimeout(init2DConsumptionCharts, 100);
+      }
+
+      // Optimize Video: Pause/Resume based on view
+      if (viewName === 'cameras') {
+        resumeAllVideos();
+      } else {
+        pauseAllVideos();
+      }
+    };
+
+    // === VIDEO PERFORMANCE OPTIMIZATION ===
+    function pauseAllVideos() {
+      const videos = document.querySelectorAll('video');
+      videos.forEach(v => {
+        if (!v.paused) v.pause();
+      });
+      // console.log(`⏸️ Paused ${videos.length} streams for performance`);
+    }
+
+    function resumeAllVideos() {
+      const videos = document.querySelectorAll('video');
+      videos.forEach(v => {
+        if (v.paused) v.play().catch(e => console.log('Resume error (ignore):', e));
+      });
+      // console.log(`▶️ Resumed ${videos.length} streams`);
+    }
+
+    // Handle Tab Switching / Minimized
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        pauseAllVideos();
+      } else {
+        // Only resume if we are on the cameras view
+        if (!viewCameras.classList.contains('hidden')) {
+          resumeAllVideos();
+        }
+      }
+    });
+
+    function loadUserProfile() {
+      // Mock Data
+      const user = {
+        name: "Juan Pérez",
+        role: "Administrador General",
+        email: "admin@altolaserena.cl",
+        phone: "+56 9 1234 5678",
+        tower: "A",
+        unit: "Oficina Admin",
+        parking: "E-15"
+      };
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      setVal('profileName', user.name);
+      setVal('profileRole', user.role);
+      setVal('profileEmail', user.email);
+      setVal('profilePhone', user.phone);
+      setVal('profileTower', user.tower);
+      setVal('profileUnit', user.unit);
+      setVal('profileParking', user.parking);
+    }
+
+    // === PROFILE ACTIONS ===
+    function editProfile() {
+      // Logic would go here
+      showToast('✏️ Editando perfil... (Simulación)', 'info');
+    }
+
+    function changePassword() {
+      // Logic would go here
+      showToast('🔒 Enviando enlace de cambio de clave... (Simulación)', 'success');
+    }
+
+    // === TOAST NOTIFICATION ===
+    function showToast(msg, type = 'info') {
+      const toast = document.createElement('div');
+
+      let bgClass = 'bg-slate-800';
+      if (type === 'success') bgClass = 'bg-green-600';
+      if (type === 'error') bgClass = 'bg-red-600';
+      if (type === 'info') bgClass = 'bg-blue-600';
+
+      toast.className = `fixed bottom-8 left-1/2 transform -translate-x-1/2 ${bgClass} text-white px-6 py-3 rounded-full shadow-2xl z-50 animate-fade-in flex items-center gap-3 font-bold border border-white/10 backdrop-blur-md`;
+      toast.innerHTML = `<span>${msg}</span>`;
+
+      document.body.appendChild(toast);
+
+      // Animate In
+      // (Handled by animate-fade-in class)
+
+      // Remove after 3s
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, 20px)';
+        toast.style.transition = 'all 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+
+    // Improved Log Logic
+    const MAX_LOGS = 200;
+    function writeLog(message, type = 'info') {
+      const container = document.getElementById('fullLogContainer');
+      if (!container) return; // logs view might not be in DOM yet
+
       const entry = document.createElement('div');
-      entry.className = 'log-entry info';
-      
-      if (logLine.includes('🚨')) {
-        entry.className = 'log-entry alarm';
-      } else if (logLine.includes('🔒') || logLine.includes('🔑')) {
-        entry.className = 'log-entry lock';
-      } else if (logLine.includes('⚠️')) {
-        entry.className = 'log-entry error';
+      entry.className = `p-3 rounded-lg border border-slate-800/50 flex gap-3 text-sm font-mono animate-fade-in ${type === 'error' ? 'bg-red-500/10 text-red-300' :
+        type === 'warning' ? 'bg-yellow-500/10 text-yellow-300' :
+          'bg-slate-800/30 text-gray-300'
+        }`;
+
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = `<span class="opacity-50">[${time}]</span> <span>${message}</span>`;
+
+      container.prepend(entry);
+
+      // Limit history
+      while (container.children.length > MAX_LOGS) {
+        container.lastElementChild.remove();
       }
-      
-      const match = logLine.match(/\[(.*?)\]/);
-      const time = match ? match[1] : '—';
-      const message = logLine.replace(/\[.*?\]\s*/, '');
-      
-      entry.textContent = `[${time}] ${message}`;
-      
-      logContainer.appendChild(entry);
-      logContainer.scrollTop = logContainer.scrollHeight;
     }
 
-    socket.on('initial-logs', (logs) => {
-      logContainer.innerHTML = '';
-      logs.forEach(logLine => addLogFromServer(logLine));
-      if (logs.length === 0) {
-        logContainer.innerHTML = '<div class="log-entry info">Sistema iniciado</div>';
+    // Debug log wrapper
+    function logDebug(msg) {
+      console.log(msg);
+      writeLog(msg, 'debug');
+    }
+
+    // Initialize global refs for new views
+    // viewLogs and navLogs moved to top of file
+
+
+
+    function renderResidents(list) {
+      try {
+        const tbody = document.getElementById('residentsTableBody');
+        if (!tbody) { logDebug('Error: residentsTableBody not found'); return; }
+
+        tbody.innerHTML = list.map(r => `
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-white">${r.tower}</td>
+                <td class="p-3 text-cyan-400 font-mono">${r.unit}</td>
+                <td class="p-3 text-gray-300">${r.name}</td>
+                <td class="p-3 text-gray-400">${r.phone}</td>
+                <td class="p-3 text-gray-500 text-xs">${r.email}</td>
+            </tr>
+          `).join('');
+      } catch (e) { logDebug(`Render Error: ${e.message}`); }
+    }
+
+    // Search Filter
+    document.getElementById('residentSearch')?.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = allResidents.filter(r =>
+        r.name.toLowerCase().includes(term) ||
+        r.unit.toLowerCase().includes(term) ||
+        r.tower.toLowerCase().includes(term)
+      );
+      renderResidents(filtered);
+    });
+
+    // === STATS LOGIC (Chart.js) ===
+    function initCharts() {
+      if (energyChart) {
+        // Update data on re-open with new randoms
+        energyChart.data.datasets[0].data = Array(7).fill(0).map(() => Math.floor(10 + Math.random() * 20));
+        energyChart.update();
+
+        alarmChart.data.datasets[0].data = [
+          Math.floor(Math.random() * 8), // Intrusión
+          Math.floor(Math.random() * 2), // Fuego
+          Math.floor(Math.random() * 3), // Pánico
+          Math.floor(Math.random() * 5)  // Falla
+        ];
+        alarmChart.update();
+
+        waterChart.data.datasets[0].data = Array(7).fill(0).map(() => Math.floor(2000 + Math.random() * 3000));
+        waterChart.update();
+        return;
       }
-    });
 
-    socket.on('new-log', (logLine) => {
-      addLogFromServer(logLine);
-    });
+      // Mock Data for Demo
+      const labels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const energyData = Array(7).fill(0).map(() => Math.floor(10 + Math.random() * 20));
+      const waterData = Array(7).fill(0).map(() => Math.floor(2000 + Math.random() * 3000));
 
-    // === ESTADO DE CÁMARAS OFFLINE ===
-    socket.on('camera-status', (status) => {
-      Object.assign(cameraStatus, status);
-      renderCameras(devicesState);
-    });
+      // Energy Chart
+      const ctxEnergy = document.getElementById('chartEnergy').getContext('2d');
+      energyChart = new Chart(ctxEnergy, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Consumo (kWh)',
+            data: energyData,
+            borderColor: '#facc15',
+            backgroundColor: 'rgba(250, 204, 21, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
 
-    // === STREAMS DE JANUS ===
-    socket.on('janus-streams', (streams) => {
-      janusStreams = streams;
-      console.log('Streams de Janus recibidos:', janusStreams);
-    });
+      // Alarm Chart
+      const ctxAlarm = document.getElementById('chartAlarms').getContext('2d');
+      alarmChart = new Chart(ctxAlarm, {
+        type: 'bar',
+        data: {
+          labels: ['Intrusión', 'Fuego', 'Pánico', 'Falla Técn.'],
+          datasets: [{
+            label: 'Eventos',
+            data: [
+              Math.floor(Math.random() * 8),
+              Math.floor(Math.random() * 2),
+              Math.floor(Math.random() * 3),
+              Math.floor(Math.random() * 5)
+            ],
+            backgroundColor: ['#ef4444', '#f97316', '#a855f7', '#3b82f6'],
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
 
-    // === ERRORES DEL SERVIDOR ===
-    socket.on('error', (data) => {
-      addLogFromServer(`[${new Date().toLocaleTimeString()}] ${data.message}`);
-    });
+      // Water Chart
+      const ctxWater = document.getElementById('chartWater').getContext('2d');
+      waterChart = new Chart(ctxWater, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Agua (Litros)',
+            data: waterData,
+            borderColor: '#3b82f6', // Blue-500
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
+    }
 
-    // === CÁMARA DEL CONSERJE ===
+    // === ACCESS CONTROL LOGIC (MOCK) ===
+    function setupAccessControls() {
+      const view = document.getElementById('view-access');
+      if (!view) return;
+
+      const cards = view.querySelectorAll('.sensor-card');
+      cards.forEach(card => {
+        const buttons = card.querySelectorAll('button');
+        const title = card.querySelector('h4').textContent;
+
+        buttons.forEach(btn => {
+          // Avoid double binding
+          if (btn.dataset.bound) return;
+          btn.dataset.bound = true;
+
+          btn.addEventListener('click', () => {
+            const action = btn.textContent.trim() || btn.title;
+
+            // Visual Feedback
+            btn.classList.add('animate-pulse');
+            setTimeout(() => btn.classList.remove('animate-pulse'), 500);
+
+            if (action === 'ABRIR' || action.includes('HABILITAR')) {
+              writeLog(`🔓 Apertura remota: ${title}`, 'success');
+              // Toggle status dot
+              const statusDot = card.querySelector('.rounded-full.bg-green-400, .rounded-full.bg-red-500, .rounded-full.bg-slate-700');
+              if (statusDot) {
+                statusDot.classList.add('animate-ping');
+                // Simulate state change for demo
+                if (statusDot.classList.contains('bg-green-400')) {
+                  // Open -> Close? No, Open -> Open
+                } else {
+                  // Closed -> Open (Visual toggle for demo)
+                  statusDot.classList.remove('bg-red-500', 'bg-slate-700');
+                  statusDot.classList.add('bg-green-400');
+                }
+              }
+              setTimeout(() => statusDot && statusDot.classList.remove('animate-ping'), 2000);
+
+            } else if (action === 'BLOQUEAR' || action === 'CERRAR') {
+              writeLog(`🔒 ${title} ha sido CERRADO/BLOQUEADO`, 'warning');
+              const statusDot = card.querySelector('.rounded-full');
+              if (statusDot) {
+                statusDot.classList.remove('bg-green-400');
+                statusDot.classList.add('bg-red-500');
+              }
+
+            } else if (action.includes('Agendar') || action === '📅') {
+              writeLog(`📅 Agendamiento iniciado para: ${title}`);
+            }
+          });
+        });
+      });
+      console.log('Access Control Listeners Attached');
+    }
+
+    // === SOLAR DASHBOARD LOGIC ===
+    let solarChart = null;
+    let solarInterval = null;
+
+    function initSolarDashboard() {
+      if (solarInterval) return; // Already running
+
+      // 1. Init Chart
+      const ctxSolar = document.getElementById('chartSolar').getContext('2d');
+
+      // Mock Bell Curve for Solar Generation (06:00 - 20:00)
+      const hours = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+      const dataPoints = [0, 0.5, 2.1, 8.5, 15.2, 22.4, 25.8, 26.2, 23.1, 18.4, 10.2, 4.5, 1.2, 0.1, 0];
+
+      solarChart = new Chart(ctxSolar, {
+        type: 'line',
+        data: {
+          labels: hours,
+          datasets: [{
+            label: 'Generación (kW)',
+            data: dataPoints,
+            borderColor: '#4ade80', // Green-400
+            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#9ca3af' },
+              beginAtZero: true
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9ca3af', maxTicksLimit: 8 }
+            }
+          },
+          animation: false
+        }
+      });
+
+      // 2. Start Live Simulation
+      solarInterval = setInterval(() => {
+        // Fluctuate Current Power
+        const basePower = 3.8;
+        const fluctuation = (Math.random() - 0.5) * 0.2; // +/- 0.1
+        const newPower = (basePower + fluctuation).toFixed(2);
+        document.getElementById('solarCurrentPower').textContent = `${newPower} kW`;
+
+        // Fluctuate Voltages
+        const vA = (420 + Math.random() * 5).toFixed(1);
+        const vB = (418 + Math.random() * 5).toFixed(1);
+        document.getElementById('invStringA').textContent = `${vA} V`;
+        document.getElementById('invStringB').textContent = `${vB} V`;
+
+        // Fluctuate Temp
+        const temp = (42 + Math.random()).toFixed(1);
+        document.getElementById('invTemp').textContent = `${temp}°C`;
+
+        // Update Chart Live (Simulate the "current" hour point moving slightly)
+        // For demo, we just wiggle the peak slightly
+        if (solarChart) {
+          const peakIndex = 7; // 13:00
+          const currentVal = solarChart.data.datasets[0].data[peakIndex];
+          const newVal = 26.2 + (Math.random() - 0.5);
+          solarChart.data.datasets[0].data[peakIndex] = newVal;
+          solarChart.update();
+        }
+
+      }, 2000); // Every 2 seconds
+    }
+
+    // === PREDICTIVE MAP ENGINE ===
+    let mapInterval = null;
+
+    function initPredictiveMap() {
+      if (mapInterval) return;
+
+      const feed = document.getElementById('prediction-feed');
+      const zones = ['zone-tower-a', 'zone-tower-b', 'zone-common', 'zone-entrance'];
+      const messages = [
+        "Análisis de flujo peatonal: Normal",
+        "Probabilidad de delivery alta en 15 min",
+        "Detectado patrón de uso en Quincho A",
+        "Vibración de portón dentro de parámetros",
+        "Escaneo biométrico de perímetro completado",
+        "Eficiencia energética: 98.4%",
+        "Predicción: Aumento de tráfico a las 18:00",
+        "Monitoreo sísmico: Estable"
+      ];
+
+      // Artificial Intelligence Simulation
+      mapInterval = setInterval(() => {
+
+        // 1. Randomly heatmap zones
+        const targetZoneId = zones[Math.floor(Math.random() * zones.length)];
+        const el = document.getElementById(targetZoneId);
+        if (el) {
+          // Reset styling
+          el.className = el.className.replace(/bg-\w+-800\/80 border-\w+-600/g, 'bg-slate-800/80 border-slate-600');
+
+          // 30% chance of "Activity" (Yellow/Red)
+          const rand = Math.random();
+          if (rand > 0.7) {
+            // High Activity (Yellow)
+            el.classList.remove('bg-slate-800/80', 'border-slate-600');
+            el.classList.add('bg-yellow-500/20', 'border-yellow-500');
+          } else if (rand > 0.9) {
+            // Risk (Red)
+            el.classList.remove('bg-slate-800/80', 'border-slate-600');
+            el.classList.add('bg-red-500/20', 'border-red-500');
+          } else {
+            // Normal (Back to slate)
+            el.classList.remove('bg-yellow-500/20', 'border-yellow-500', 'bg-red-500/20', 'border-red-500');
+            el.classList.add('bg-slate-800/80', 'border-slate-600');
+          }
+        }
+
+        // 2. Inject Insight
+        if (Math.random() > 0.6 && feed) {
+          const msg = messages[Math.floor(Math.random() * messages.length)];
+          const item = document.createElement('div');
+          item.className = 'p-2 rounded bg-slate-800/50 border border-slate-700 text-cyan-300 animate-pulse border-l-2 border-l-cyan-500';
+          item.innerHTML = `<span class="opacity-50 text-[10px] mr-2">${new Date().toLocaleTimeString()}</span> ${msg}`;
+
+          feed.prepend(item);
+          if (feed.children.length > 8) feed.lastElementChild.remove();
+        }
+
+      }, 3000);
+    }
+
+    // === VISUAL HEADER ALERTS ===
+    let alertsInterval = null;
+
+    function initHeaderAlerts() {
+      if (alertsInterval) return;
+
+      const alerts = [
+        { id: 'alert-red', cardId: 'fenceCard', name: 'Cerco Eléctrico', log: '⚠️ ALERTA: Cerco Eléctrico activado' },
+        { id: 'alert-blue', cardId: 'card-pumps', name: 'Sala de Bombas', log: '💧 ALERTA: Falla en bomba de agua' },
+        { id: 'alert-orange', cardId: 'card-fire', name: 'Incendios', log: '🔥 ALERTA: Sensor de humo activado' },
+        { id: 'alert-yellow', cardId: 'card-electric', name: 'Energía Torres', log: '⚡ ALERTA: Corte de energía en Torre B' },
+        { id: 'alert-green', cardId: 'card-water', name: 'Exceso Agua', log: '🌊 ALERTA: Nivel crítico acumulado' },
+        { id: 'alert-purple', cardId: null, name: 'Paneles Solares', log: '☀️ ALERTA: Falla inversor solar' },
+        { id: 'alert-black', cardId: 'card-generator', name: 'Generador', log: '⚫ ALERTA: Generador encendido' },
+        { id: 'alert-brown', cardId: 'card-pool', name: 'Piscina', log: '🏊 ALERTA: Bomba piscina detenida' },
+        { id: 'alert-white', cardId: null, name: 'Ascensor', log: '🛗 ALERTA: Ascensor trabado piso 4' }
+      ];
+
+      // Simulate random alerts
+      alertsInterval = setInterval(() => {
+        // 20% chance to trigger an alert
+        if (Math.random() > 0.8) {
+          const alert = alerts[Math.floor(Math.random() * alerts.length)];
+          const el = document.getElementById(alert.id);
+
+          if (el) {
+            // Activate Header Dot
+            el.classList.remove('opacity-80');
+            el.classList.add('opacity-100', 'animate-ping', 'shadow-[0_0_10px_currentColor]');
+
+            // Log it
+            writeLog(alert.log, 'error');
+
+            // Activate Sensor Card (if mapped)
+            let cardEl = null;
+            if (alert.cardId) {
+              cardEl = document.getElementById(alert.cardId);
+              if (cardEl) {
+                cardEl.classList.add('alarm-active', 'transition-all', 'duration-500', 'scale-[1.02]');
+              }
+            }
+
+            // Reset after 5s
+            setTimeout(() => {
+              el.classList.remove('opacity-100', 'animate-ping', 'shadow-[0_0_10px_currentColor]');
+              el.classList.add('opacity-80');
+
+              if (cardEl) {
+                cardEl.classList.remove('alarm-active', 'transition-all', 'duration-500', 'scale-[1.02]');
+              }
+            }, 5000);
+          }
+        }
+      }, 8000); // Check every 8s
+    }
+
+    // Call setup 
+    setTimeout(setupAccessControls, 1000);
+    initHeaderAlerts(); // Start alerts logic
+
+    // === CLOCK & WEATHER ===
+    function updateClock() {
+      const now = new Date();
+      const timeEl = document.getElementById('headerTime');
+      const dateEl = document.getElementById('headerDate');
+
+      if (timeEl) {
+        timeEl.textContent = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      if (dateEl) {
+        // "JUEVES, 10 DE ENERO"
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        dateEl.textContent = now.toLocaleDateString('es-CL', options);
+      }
+    }
+
+    // Helper for icons
+    function getWeatherIcon(code, fallbackText) {
+      // WeatherAPI condition codes
+      if (code === 1000) return { icon: '☀️', text: 'Soleado' };
+      if (code === 1003) return { icon: '⛅', text: 'Parcial' };
+      if (code === 1006 || code === 1009) return { icon: '☁️', text: 'Nublado' };
+      if (code >= 1030 && code <= 1147) return { icon: '🌫️', text: 'Neblina' };
+      if (code >= 1063 && code <= 1201) return { icon: '🌧️', text: 'Lluvia' };
+      if (code >= 1066 && code <= 1225) return { icon: '❄️', text: 'Nieve' };
+      if (code >= 1273 && code <= 1282) return { icon: '⛈️', text: 'Tormenta' };
+
+      return { icon: '🌥️', text: fallbackText || 'Variado' };
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial call
+
+
+
+    // updateWeather() removed - handled by server
+
+
+
+
+
+    // === WEBRTC WITH MEDIAMTX ===
+    // MediaMTX connections are handled per-camera via WHIP protocol
+    // See mediamtx-webrtc.js for implementation
+
+    // === LOCAL CAM ===
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => localVideo.srcObject = stream)
-      .catch(() => {
-        localVideo.parentElement.innerHTML = '<div class="text-red-400 text-sm">Cámara no disponible</div>';
+      .catch(() => console.log('Local cam error'));
+
+    // === SOCKET EVENTS ===
+    // This function is called AFTER auth succeeds and socket is initialized
+    function setupSocketListeners() {
+      if (!socket) {
+        console.error('Cannot setup socket listeners: socket not initialized');
+        return;
+      }
+
+      console.log('Setting up Socket.IO event listeners...');
+
+      socket.on('devices-update', (updatedDevices) => {
+        devicesState = updatedDevices;
+        // Re-init full grid if config changes
+        initCameras();
       });
 
-    // === RENDERIZAR CÁMARAS ===
-    function getCamerasInSection(sectionKey) {
-      const { range } = SECTIONS[sectionKey];
-      const [start, end] = range;
-      const camIds = [];
-      for (let i = start; i <= end; i++) {
-        camIds.push(`cam${i}`);
+      socket.on('camera-status', (status) => {
+        Object.assign(cameraStatus, status);
+        // Update statuses directly without re-rendering everything
+        Object.keys(status).forEach(camId => {
+          const isOnline = status[camId].online;
+          const dot = document.getElementById(`status-dot-${camId}`);
+          const txt = document.getElementById(`status-text-${camId}`);
+
+          if (dot) dot.className = `status-dot ${isOnline ? 'online' : 'offline'}`;
+          if (txt) txt.textContent = isOnline ? 'EN VIVO' : 'OFFLINE';
+        });
+      });
+
+      // Motion alerts disabled per client request
+      /*
+      socket.on('motion-alert', (data) => {
+        // data: { type: 'motion', camId: 'cam1', channel: '36', cameraName: 'Conserjeria', ... }
+        const camId = data.camId;
+        const cameraName = data.cameraName || camId.toUpperCase();
+
+        const message = `🚨 Movimiento detectado en ${cameraName}`;
+        writeLog(message, 'warning'); // Log to new UI
+
+        const card = document.getElementById(`card-${camId}`);
+
+        if (card) {
+          // Visual feedback (Border)
+          card.classList.add('motion-active');
+
+          // Show Footer Label
+          const motionLabel = document.getElementById(`motion-label-${camId}`);
+          if (motionLabel) {
+            motionLabel.classList.remove('hidden');
+          }
+
+          // Log to activity panel
+          const logDiv = document.createElement('div');
+          logDiv.className = 'text-yellow-300 font-mono text-xs my-1';
+          logDiv.textContent = `> [${new Date().toLocaleTimeString()}] 🏃 MOVIMIENTO: ${cameraName}`;
+          if (logContainer) logContainer.prepend(logDiv);
+
+          // Clear after 6s
+          setTimeout(() => {
+            card.classList.remove('motion-active');
+            if (motionLabel) {
+              motionLabel.classList.add('hidden');
+            }
+          }, 6000);
+        }
+      });
+      */
+
+      // --- SOCKET IO HANDLERS ---
+      socket.on('connect', () => {
+        console.log('Connected to server');
+        connectionBanner.classList.add('hidden');
+      });
+
+      socket.on('connect_error', (err) => {
+        console.error('Socket connection error:', err);
+        logDebug('Socket Error: ' + err.message);
+        // Legacy token check REMOVED - session-based auth doesn't use tokens
+        // Socket errors should not force logout
+      });
+
+      socket.on('disconnect', () => {
+        console.warn('Socket disconnected from server');
+        connectionBanner.classList.remove('hidden');
+      });
+
+      // SENSOR UPDATES FROM MODBUS
+      socket.on('generator-update', (data) => {
+        updateSensorsUI(data);
+      });
+
+      socket.on('generator-alarm', (alarmData) => {
+        // Handle alarms visually (notification)
+        console.warn('⚠️ Generator Alarm:', alarmData);
+        alarmData.alarms.forEach(alarm => {
+          showToast(`⚠️ Alarma: ${alarm.name}`, 'warning');
+        });
+      });
+
+      socket.on('new-log', (log) => {
+        if (!logContainer) return; // Null check
+        const div = document.createElement('div');
+        div.textContent = log.replace(/^\[.*?\]\s*/, '> '); // Simplify time
+        div.className = log.includes('🚨') ? 'text-red-400 font-bold' : '';
+        logContainer.prepend(div);
+      });
+
+      // WEATHER UPDATE
+      socket.on('weather-update', (data) => {
+        // data matches API structure or simplified server structure
+        // Server sends: { temp_c: 22, condition: { text: "Soleado", code: 1000 } }
+        const tempEl = document.getElementById('weatherTemp');
+        const descEl = document.getElementById('weatherDesc');
+        const iconEl = document.getElementById('weatherIcon');
+
+        if (tempEl && data.temp_c !== undefined) tempEl.textContent = `${Math.round(data.temp_c)}°`;
+        if (descEl && data.condition) descEl.textContent = data.condition.text;
+
+        if (iconEl && data.condition) {
+          const info = getWeatherIcon(data.condition.code, data.condition.text);
+          iconEl.textContent = info.icon;
+        }
+      });
+
+
+
+      socket.on('initial-logs', (logs) => {
+        if (!logContainer) return; // Null check
+        logContainer.innerHTML = '';
+        logs.forEach(log => {
+          const div = document.createElement('div');
+          div.textContent = log.replace(/^\[.*?\]\s*/, '> ');
+          logContainer.prepend(div);
+        });
+      });
+    } // End of setupSocketListeners()
+
+
+    // Legacy renderTabs removed
+
+    // MediaMTX variables are defined in mediamtx-webrtc.js
+    // Removed duplicate declarations to fix syntax errors
+
+    // Simplified requestStream - now calls MediaMTX WHIP connection
+    function requestStream(camId) {
+      const streamId = parseInt(camId.replace('cam', ''));
+      console.log(`Requesting MediaMTX stream ${streamId} for ${camId}`);
+
+      // Extract the cam number to use as stream name
+      const streamName = camId; // MediaMTX uses cam1, cam2, cam3 from config
+
+      // Call the connectCamera function from mediamtx-webrtc.js
+      if (typeof connectCamera === 'function') {
+        connectCamera(camId, streamName);
+      } else {
+        console.error('MediaMTX WebRTC not loaded');
       }
-      return camIds;
     }
 
-    function renderCameras(devices) {
-      if (!devices || Object.keys(SECTIONS).length === 0) return;
-      devicesState = devices;
-      const camIds = getCamerasInSection(currentSection);
-      camerasGrid.innerHTML = '';
-      camIds.forEach(camId => {
-        const cam = devices[camId];
-        if (!cam) return;
+    // Legacy renderCameras removed to prevent duplicates
 
-        // Estado de conexión
-        const isOnline = cameraStatus[camId]?.online !== false;
-        const hasAlarm = cam.fireAlarm || cam.soundAlarm;
-        const offlineClass = isOnline ? '' : 'opacity-50 grayscale';
-        const offlineText = isOnline ? 'Vista en vivo' : 'Cámara offline';
+    function updateAdvancedTable(data) {
+      const tbody = document.getElementById('advancedTableBody');
+      if (!tbody) return;
 
-        const card = document.createElement('div');
-        card.className = `camera-card ${hasAlarm ? 'alarm-active' : ''}`;
-        card.innerHTML = `
-          <div class="p-2 text-center font-bold text-xs bg-gray-800">${camId}</div>
-          <div class="h-24 bg-black flex items-center justify-center text-gray-500 text-xs ${offlineClass}">
-            ${offlineText}
-          </div>
-          <div class="p-2 flex justify-between items-center">
-            <button onclick="event.stopPropagation(); toggleLock('${camId}', ${!cam.lock})"
-              class="text-xs px-2 py-1 rounded ${cam.lock ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white ${isOnline ? '' : 'opacity-50 cursor-not-allowed'}" 
-              ${isOnline ? '' : 'disabled'}>
-              ${cam.lock ? '🔓 Abrir' : '🔒 Cerrar'}
-            </button>
-            <div class="flex space-x-1">
-              <button onclick="event.stopPropagation(); triggerAlarm('${camId}', 'fire')" 
-                class="text-orange-400 hover:text-orange-300 text-base ${isOnline ? '' : 'opacity-50'}" 
-                ${isOnline ? '' : 'disabled'}>🔥</button>
-              <button onclick="event.stopPropagation(); triggerAlarm('${camId}', 'sound')" 
-                class="text-red-400 hover:text-red-300 text-base ${isOnline ? '' : 'opacity-50'}" 
-                ${isOnline ? '' : 'disabled'}>🔊</button>
-            </div>
-          </div>
+      // Helper to safe get value
+      const getVal = (v, unit) => v !== undefined ? `${v} <span class="text-gray-500 text-xs">${unit}</span>` : '-';
+
+      let rows = '';
+
+      // Electric Fence
+      if (data.electricFence) {
+        rows += `
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-cyan-400">Cerco Eléctrico</td>
+                <td class="p-3 text-white">Voltaje</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.electricFence.voltage}</td>
+                <td class="p-3 text-gray-500 text-sm">V</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-cyan-400">Cerco Eléctrico</td>
+                <td class="p-3 text-white">Impedancia</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.electricFence.impedance || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">Ω</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-cyan-400">Cerco Eléctrico</td>
+                <td class="p-3 text-white">Energía</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.electricFence.energy || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">J</td>
+            </tr>`;
+      }
+
+      // Hydraulic
+      if (data.hydraulic) {
+        rows += `
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-blue-400">Hidráulico</td>
+                <td class="p-3 text-white">Presión</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.hydraulic.systemPressure || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">Bar</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-blue-400">Hidráulico</td>
+                <td class="p-3 text-white">Caudal</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.hydraulic.flowRate || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">L/min</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-blue-400">Hidráulico</td>
+                <td class="p-3 text-white">Temp. Aceite</td>
+                <td class="p-3 font-mono text-right text-gray-300">${typeof data.hydraulic.oilTemp === 'number' ? data.hydraulic.oilTemp.toFixed(1) : 0}</td>
+                <td class="p-3 text-gray-500 text-sm">°C</td>
+            </tr>`;
+      }
+
+      // AC Drive
+      if (data.acDrive) {
+        rows += `
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-purple-400">Variador PD</td>
+                <td class="p-3 text-white">Torque</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.acDrive.torque || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">%</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-purple-400">Variador PD</td>
+                <td class="p-3 text-white">DC Bus</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.acDrive.dcBus || 0}</td>
+                <td class="p-3 text-gray-500 text-sm">V</td>
+            </tr>
+             <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-purple-400">Variador PD</td>
+                <td class="p-3 text-white">Temperatura</td>
+                <td class="p-3 font-mono text-right text-gray-300">${typeof data.acDrive.temperature === 'number' ? data.acDrive.temperature.toFixed(1) : 0}</td>
+                <td class="p-3 text-gray-500 text-sm">°C</td>
+            </tr>`;
+      }
+
+      // Smoke
+      if (data.smokeDetectors) {
+        data.smokeDetectors.forEach(s => {
+          rows += `
+                <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                    <td class="p-3 text-gray-400">Sensor Humo</td>
+                    <td class="p-3 text-white">Oscurecimiento (${s.zone})</td>
+                    <td class="p-3 font-mono text-right text-gray-300">${s.value}</td>
+                    <td class="p-3 text-gray-500 text-sm">%</td>
+                </tr>`;
+        });
+      }
+
+      // Shelly
+      if (data.shellyEM) {
+        rows += `
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-yellow-400">Energía (General)</td>
+                <td class="p-3 text-white">Factor de Potencia</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.shellyEM.pf}</td>
+                <td class="p-3 text-gray-500 text-sm">PF</td>
+            </tr>
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-yellow-400">Energía (General)</td>
+                <td class="p-3 text-white">Potencia Activa</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.shellyEM.power}</td>
+                <td class="p-3 text-gray-500 text-sm">W</td>
+            </tr>
+             <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                <td class="p-3 text-yellow-400">Energía (General)</td>
+                <td class="p-3 text-white">Consumo Acumulado</td>
+                <td class="p-3 font-mono text-right text-gray-300">${data.shellyEM.energy ? data.shellyEM.energy.toFixed(3) : 0}</td>
+                <td class="p-3 text-gray-500 text-sm">kWh</td>
+            </tr>`;
+      }
+
+      tbody.innerHTML = rows;
+    }
+
+    function updateSensorsUI(data) {
+      if (!data) return;
+
+      // UPDATE 2D CHARTS
+      if (chartConsumptionWater) {
+        // Mock logic: Daily accum is not really in 'data', using static or mock
+        const used = data.waterConsumed || 4200;
+        chartConsumptionWater.data.datasets[0].data[0] = used;
+        chartConsumptionWater.update();
+
+        const totalElem = document.getElementById('val-water-total');
+        if (totalElem) totalElem.textContent = used.toLocaleString();
+      }
+
+      if (chartConsumptionEnergy && data.powerComunidad !== undefined) {
+        chartConsumptionEnergy.data.datasets[0].data = [
+          data.powerComunidad,
+          data.powerTorreA,
+          data.powerTorreB
+        ];
+        chartConsumptionEnergy.update();
+
+        const totalPwr = data.powerComunidad + data.powerTorreA + data.powerTorreB;
+        const totalElem = document.getElementById('val-energy-total');
+        if (totalElem) totalElem.textContent = totalPwr.toFixed(1);
+      }
+
+
+
+      if (chartConsumptionEnergy && data.powerComunidad !== undefined) {
+        chartConsumptionEnergy.data.datasets[0].data = [
+          data.powerComunidad,
+          data.powerTorreA,
+          data.powerTorreB
+        ];
+        chartConsumptionEnergy.update();
+
+        const totalPwr = data.powerComunidad + data.powerTorreA + data.powerTorreB;
+        const totalElem = document.getElementById('val-energy-total');
+        if (totalElem) totalElem.textContent = totalPwr.toFixed(1);
+      }
+
+      // === WATER TANKS ===
+      // Tank A (card-tanks)
+      const tankABar = document.querySelector('#card-tanks .bg-gradient-to-t.from-cyan-600');
+      const tankAText = tankABar?.nextElementSibling?.querySelector('.text-2xl');
+      if (tankABar && tankAText && data.waterTankA !== undefined) {
+        tankABar.style.height = `${data.waterTankA}%`;
+        tankAText.textContent = `${Math.round(data.waterTankA)}%`;
+      }
+
+      // Tank B
+      const tankBBar = document.querySelectorAll('#card-tanks .bg-gradient-to-t.from-cyan-600')[1];
+      const tankBText = tankBBar?.nextElementSibling?.querySelector('.text-2xl');
+      if (tankBBar && tankBText && data.waterTankB !== undefined) {
+        tankBBar.style.height = `${data.waterTankB}%`;
+        tankBText.textContent = `${Math.round(data.waterTankB)}%`;
+      }
+
+      // === PUMP PRESSURES ===
+      const pumpTorreAText = document.querySelector('#card-pumps .text-xl.text-blue-400');
+      if (pumpTorreAText && data.pumpTorreAPressure !== undefined) {
+        pumpTorreAText.textContent = `${data.pumpTorreAPressure.toFixed(1)} Bar`;
+      }
+
+      const pumpTorreBText = document.querySelectorAll('#card-pumps .text-xl.text-blue-400')[1];
+      if (pumpTorreBText && data.pumpTorreBPressure !== undefined) {
+        pumpTorreBText.textContent = `${data.pumpTorreBPressure.toFixed(1)} Bar`;
+      }
+
+      // Pump States
+      const pumpStatesContainer = document.querySelector('#card-pumps .flex.gap-2.mt-3');
+      if (pumpStatesContainer) {
+        const b1Class = data.pumpB1State === 1 ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-700 text-gray-400';
+        const b2Class = data.pumpB2State === 1 ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-700 text-gray-400';
+
+        pumpStatesContainer.innerHTML = `
+          <span class="text-xs px-2 py-1 rounded border ${b1Class}">B1: ${data.pumpB1State === 1 ? 'ON' : data.pumpB1State === 2 ? 'STBY' : 'OFF'}</span>
+          <span class="text-xs px-2 py-1 rounded ${b2Class}">B2: ${data.pumpB2State === 1 ? 'ON' : data.pumpB2State === 2 ? 'STBY' : 'OFF'}</span>
         `;
-        card.onclick = () => expandCamera(camId);
-        camerasGrid.appendChild(card);
-      });
+      }
 
-      if (currentExpandedCam && devices[currentExpandedCam]) {
-        updateExpandedView(devices[currentExpandedCam]);
+      // === GENERATOR ===
+      // Fuel level (radial chart SVG)
+      const fuelText = document.querySelector('#card-generator .text-3xl.font-bold.text-purple-400');
+      if (fuelText && data.fuelLevel !== undefined) {
+        fuelText.textContent = `${Math.round(data.fuelLevel)}%`;
+      }
+
+      const fuelCircle = document.querySelector('#card-generator circle[stroke="url(#fuelGrad)"]');
+      if (fuelCircle && data.fuelLevel !== undefined) {
+        const circumference = 2 * Math.PI * 48;
+        const offset = circumference - (data.fuelLevel / 100) * circumference;
+        fuelCircle.setAttribute('stroke-dashoffset', offset);
+      }
+
+      // Battery voltage
+      const batteryText = document.querySelector('#card-generator .text-xl.font-bold.text-green-400');
+      if (batteryText && data.batteryVoltage !== undefined) {
+        batteryText.textContent = `${data.batteryVoltage.toFixed(1)}V`;
+      }
+
+      // Generator state
+      const genStateText = document.querySelector('#card-generator .text-xs.text-green-400');
+      if (genStateText && data.generatorRunning !== undefined) {
+        if (data.generatorRunning) {
+          genStateText.textContent = '● RUNNING';
+          genStateText.classList.remove('text-green-400');
+          genStateText.classList.add('text-yellow-400');
+        } else if (data.onMains) {
+          genStateText.textContent = '● READY';
+          genStateText.classList.remove('text-yellow-400');
+          genStateText.classList.add('text-green-400');
+        }
+      }
+
+      // === POOL ===
+      // Temperature (radial chart)
+      const poolTempText = document.querySelector('#card-pool .text-xl.font-bold.text-cyan-400');
+      if (poolTempText && data.poolTemp !== undefined) {
+        poolTempText.textContent = data.poolTemp.toFixed(1);
+      }
+
+      // pH (radial chart)
+      const poolPHText = document.querySelector('#card-pool .text-xl.font-bold.text-green-400');
+      if (poolPHText && data.poolPH !== undefined) {
+        poolPHText.textContent = data.poolPH.toFixed(1);
+      }
+
+      // Chlorine
+      const poolChlorineText = document.querySelector('#card-pool .text-2xl.font-bold.text-white');
+      if (poolChlorineText && data.poolChlorine !== undefined) {
+        poolChlorineText.textContent = data.poolChlorine.toFixed(1);
+      }
+
+      // === WATER FLOW (Common areas) ===
+      const flowRateText = document.getElementById('val-flow-rate');
+      if (flowRateText && data.waterFlowRate !== undefined) {
+        flowRateText.textContent = data.waterFlowRate.toFixed(1);
+      }
+
+      const waterConsumedText = document.getElementById('val-water-consumed');
+      if (waterConsumedText && data.waterConsumedToday !== undefined) {
+        waterConsumedText.textContent = `${(data.waterConsumedToday / 1000).toFixed(1)}k`;
+      }
+
+      // === CLIMATE ===
+      // Exterior temp
+      const tempExtText = document.querySelector('#card-climate .text-xl.font-bold.text-amber-400');
+      if (tempExtText && data.tempExterior !== undefined) {
+        tempExtText.textContent = Math.round(data.tempExterior);
+      }
+
+      // Interior temp
+      const tempIntText = document.querySelector('#card-climate .text-xl.font-bold.text-cyan-400');
+      if (tempIntText && data.tempInteriorHall !== undefined) {
+        tempIntText.textContent = Math.round(data.tempInteriorHall);
+      }
+
+      // === ELECTRIC CONSUMPTION ===
+      // Comunidad
+      const powerComText = document.getElementById('val-pwr-comunidad');
+      const powerComBar = document.getElementById('bar-pwr-comunidad');
+      if (powerComText && data.powerComunidad !== undefined) {
+        powerComText.textContent = data.powerComunidad.toFixed(1);
+        if (powerComBar) powerComBar.style.width = `${Math.min(100, (data.powerComunidad / 60) * 100)}%`; // Assuming 60kW max
+      }
+
+      // Torre A
+      const powerTAText = document.getElementById('val-pwr-torre-a');
+      const powerTABar = document.getElementById('bar-pwr-torre-a');
+      if (powerTAText && data.powerTorreA !== undefined) {
+        powerTAText.textContent = data.powerTorreA.toFixed(0);
+        if (powerTABar) powerTABar.style.width = `${Math.min(100, (data.powerTorreA / 150) * 100)}%`; // Assuming 150kW max
+      }
+
+      // Torre B
+      const powerTBText = document.getElementById('val-pwr-torre-b');
+      const powerTBBar = document.getElementById('bar-pwr-torre-b');
+      if (powerTBText && data.powerTorreB !== undefined) {
+        powerTBText.textContent = data.powerTorreB.toFixed(0);
+        if (powerTBBar) powerTBBar.style.width = `${Math.min(100, (data.powerTorreB / 150) * 100)}%`;
       }
     }
 
-    // === VISTA EXPANDIDA ===
-    function expandCamera(camId) {
+    // === ACTIONS ===
+    window.logout = () => { localStorage.removeItem('token'); window.location.href = '/login.html'; };
+    window.clearLogsUI = () => logContainer.innerHTML = '';
+
+    window.controlFence = (status) => socket.emit('set-fence-status', { status });
+    window.controlAcDrive = (status) => socket.emit('set-ac-drive', { status });
+
+    window.toggleLock = (camId, state) => socket.emit('toggle-lock', { camId, state });
+    window.triggerAlarm = (camId, type) => {
+      if (confirm('¿Activar alarma?')) socket.emit('trigger-alarm', { camId, type });
+    };
+
+    async function expandCamera(camId) {
+      if (!devicesState[camId]) return;
       currentExpandedCam = camId;
-      updateExpandedView(devicesState[camId]);
-      
-      // Mostrar video si es una cámara Janus
-      const janusStream = janusStreams.find(s => s.id === camId);
-      if (janusStream) {
-        startWebRTCForCamera(camId);
-      }
-      
-      expandedView.style.display = 'flex';
-    }
 
-    function updateExpandedView(cam) {
-      if (!cam) return;
-      const camId = currentExpandedCam;
-      expandedTitle.textContent = `Cámara: ${camId.toUpperCase()}`;
-      expandedCamName.textContent = camId;
-      expandedLockBtn.textContent = cam.lock ? '🔓 Abrir cerradura' : '🔒 Cerrar cerradura';
-      expandedLockBtn.className = `px-4 py-2 rounded font-medium ${cam.lock ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white`;
-      expandedLockBtn.onclick = () => {
-        const newState = !cam.lock;
-        socket.emit('toggle-lock', { camId, state: newState });
-      };
-      expandedFireBtn.onclick = () => triggerAlarm(camId, 'fire');
-      expandedSoundBtn.onclick = () => triggerAlarm(camId, 'sound');
+      // Stop all grid streams robustly
+      if (window.cleanupAllCameras) {
+        window.cleanupAllCameras();
+      } else {
+        Object.keys(devicesState).forEach(id => {
+          if (window.cleanupCamera) window.cleanupCamera(id);
+        });
+      }
+
+      expandedView.classList.remove('hidden');
+      expandedView.classList.add('flex');
+      expandedTitle.textContent = `Cámara ${camId.toUpperCase()} (Alta Calidad)`;
+
+      const cam = devicesState[camId];
+      updateExpandedButton(cam);
+
+      // Connect to HD stream
+      // Mapping: camX -> camX_hd
+      const hdStreamName = `${camId}_hd`;
+      console.log(`Expanding ${camId} -> connecting to ${hdStreamName}`);
+
+      // We use the same 'expandedVideo' element ID explicitly
+      if (window.connectCamera) {
+        // connectionKey, streamName, targetVideoId
+        // Key can be unique to avoid conflict
+        await window.connectCamera(`${camId} _hd_conn`, hdStreamName, 'expandedVideo');
+      }
     }
 
     function closeExpandedView() {
-      expandedView.style.display = 'none';
+      if (!currentExpandedCam) return;
+
+      // Stop HD stream
+      if (window.cleanupCamera) {
+        window.cleanupCamera(`${currentExpandedCam} _hd_conn`);
+      }
+
+      expandedView.classList.add('hidden');
+      expandedView.classList.remove('flex');
       currentExpandedCam = null;
-      // Detener video si estaba reproduciéndose
-      expandedVideo.srcObject = null;
-      expandedVideoPlaceholder.style.display = 'block';
+
+      // Restore grid streams
+      // initCameras will ensure grid is clean and correct
+      initCameras();
     }
 
-    // === WebRTC para cámara expandida ===
-    let peerConnections = {};
-
-    async function startWebRTCForCamera(camId) {
-      try {
-        // Obtener configuración WebRTC del backend
-        const res = await fetch('/api/webrtc-config', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const webrtcConfig = await res.json();
-
-        // Crear PeerConnection
-        const pc = new RTCPeerConnection(webrtcConfig);
-        peerConnections[camId] = pc;
-
-        // Escuchar candidatos ICE
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit('webrtc-ice-candidate', { camId, candidate: event.candidate });
-          }
-        };
-
-        // Escuchar estado de conexión
-        pc.onconnectionstatechange = () => {
-          console.log(`Estado de conexión WebRTC para ${camId}:`, pc.connectionState);
-        };
-
-        // Escuchar track remoto (video de Janus)
-        pc.ontrack = (event) => {
-          expandedVideo.srcObject = event.streams[0];
-          expandedVideoPlaceholder.style.display = 'none';
-        };
-
-        // Crear oferta
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        socket.emit('webrtc-offer', { camId, offer });
-
-      } catch (err) {
-        console.error('Error al iniciar WebRTC:', err);
-      }
+    function updateExpandedButton(cam) {
+      if (!cam) return;
+      expandedLockBtn.textContent = cam.lock ? 'Abrir Cerradura' : 'Cerrar Cerradura';
+      expandedLockBtn.className = `px - 6 py - 2 rounded - lg font - semibold transition transform hover: scale - 105 ${cam.lock ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`;
+      expandedLockBtn.onclick = () => window.toggleLock(currentExpandedCam, !cam.lock);
     }
 
-    // Escuchar oferta del servidor Janus
-    socket.on('webrtc-offer', (data) => {
-      const pc = peerConnections[data.camId];
-      if (pc) {
-        pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-        // Crear respuesta
-        pc.createAnswer()
-          .then(answer => {
-            pc.setLocalDescription(answer);
-            socket.emit('webrtc-answer', { camId: data.camId, answer });
-          });
-      }
-    });
-
-    // Escuchar respuesta del servidor Janus
-    socket.on('webrtc-answer', (data) => {
-      const pc = peerConnections[data.camId];
-      if (pc && !pc.remoteDescription) {
-        pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-      }
-    });
-
-    // Escuchar candidatos ICE
-    socket.on('webrtc-ice-candidate', (data) => {
-      const pc = peerConnections[data.camId];
-      if (pc) {
-        pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-      }
-    });
-
-    window.toggleLock = (camId, state) => {
-      socket.emit('toggle-lock', { camId, state });
-    };
-
-    window.triggerAlarm = (camId, type) => {
-      if (confirm(`¿Activar alarma ${type === 'fire' ? 'de incendio' : 'sonora'} en ${camId}?`)) {
-        socket.emit('trigger-alarm', { camId, type });
-      }
-    };
-
-    socket.on('devices-update', renderCameras);
-    socket.on('alarm-triggered', ({ camId, type }) => {
-      // Ya se loguea en el backend
-    });
-
+    // Auto-close on Escape
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeExpandedView();
     });
 
-    socket.on('connect_error', (err) => {
-      if (err.message === 'Token inválido' || err.message === 'No token') {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-      }
-    });
+    // Init Grid State UI
+    setGrid(currentGridCols);
+
   </script>
 </body>
+
 </html>

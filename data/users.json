@@ -1,0 +1,41 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "$2b$10$RfKq755uB7LJHl2pQJh4JODxJkYgpREFncqhs1JYtW6gMBCbM2/TO",
+      "role": "admin",
+      "name": "Administrador Sistema",
+      "email": "admin@edificio.com"
+    },
+    {
+      "username": "comite1",
+      "password": "$2b$10$cuI1xIuNl0SPW3eiuJmAeu6HMHu63l7WtwQs2o8/8uBTpuwbXjKVa",
+      "role": "committee",
+      "name": "Juan Pérez (Presidente)",
+      "email": "jperez@edificio.com"
+    },
+    {
+      "username": "comite2",
+      "password": "$2b$10$6Ofxp2G/LBcBkpeMc2YN0.92hZrn1QfSXxexnq3cALWKdnyAEBD5m",
+      "role": "committee",
+      "name": "María González (Tesorera)",
+      "email": "mgonzalez@edificio.com"
+    },
+    {
+      "username": "usuario1",
+      "password": "$2b$10$CagiYIX6pBmf5pvNGgX48uWb9daUmc8y95laLYqQZJzcum.mpBAIu",
+      "role": "user",
+      "name": "Carlos Ramírez",
+      "email": "cramirez@edificio.com",
+      "unit": "Torre A - 501"
+    },
+    {
+      "username": "usuario2",
+      "password": "$2b$10$KINxSskrAp2MhkK3qBKgUOK11VYtFkHj4audT2xVFe7CGwH5ySvcS",
+      "role": "user",
+      "name": "Ana Silva",
+      "email": "asilva@edificio.com",
+      "unit": "Torre B - 302"
+    }
+  ]
+}

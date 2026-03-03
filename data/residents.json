@@ -1,0 +1,122 @@
+[
+    {
+        "id": 1,
+        "name": "Juan Pérez",
+        "tower": "A",
+        "unit": "101",
+        "email": "juan.p@email.com",
+        "phone": "+56 9 1111 2222"
+    },
+    {
+        "id": 2,
+        "name": "María González",
+        "tower": "A",
+        "unit": "102",
+        "email": "maria.g@email.com",
+        "phone": "+56 9 3333 4444"
+    },
+    {
+        "id": 3,
+        "name": "Pedro Silva",
+        "tower": "A",
+        "unit": "201",
+        "email": "pedro.s@email.com",
+        "phone": "+56 9 5555 6666"
+    },
+    {
+        "id": 4,
+        "name": "Ana López",
+        "tower": "A",
+        "unit": "202",
+        "email": "ana.l@email.com",
+        "phone": "+56 9 7777 8888"
+    },
+    {
+        "id": 5,
+        "name": "Diego Torres",
+        "tower": "A",
+        "unit": "301",
+        "email": "diego.t@email.com",
+        "phone": "+56 9 9999 0000"
+    },
+    {
+        "id": 6,
+        "name": "Laura Díaz",
+        "tower": "B",
+        "unit": "101",
+        "email": "laura.d@email.com",
+        "phone": "+56 9 1212 3434"
+    },
+    {
+        "id": 7,
+        "name": "Roberto M.",
+        "tower": "B",
+        "unit": "102",
+        "email": "roberto.m@email.com",
+        "phone": "+56 9 5656 7878"
+    },
+    {
+        "id": 8,
+        "name": "Carmen Vega",
+        "tower": "B",
+        "unit": "201",
+        "email": "carmen.v@email.com",
+        "phone": "+56 9 9090 1212"
+    },
+    {
+        "id": 9,
+        "name": "Jorge Munoz",
+        "tower": "B",
+        "unit": "202",
+        "email": "jorge.m@email.com",
+        "phone": "+56 9 3434 5656"
+    },
+    {
+        "id": 10,
+        "name": "Sofia R.",
+        "tower": "B",
+        "unit": "PH-1",
+        "email": "sofia.r@email.com",
+        "phone": "+56 9 7878 9090"
+    },
+    {
+        "id": 11,
+        "name": "Luis F.",
+        "tower": "A",
+        "unit": "401",
+        "email": "luis.f@email.com",
+        "phone": "+56 9 1122 3344"
+    },
+    {
+        "id": 12,
+        "name": "Elena K.",
+        "tower": "A",
+        "unit": "402",
+        "email": "elena.k@email.com",
+        "phone": "+56 9 5566 7788"
+    },
+    {
+        "id": 13,
+        "name": "Lucas P.",
+        "tower": "B",
+        "unit": "301",
+        "email": "lucas.p@email.com",
+        "phone": "+56 9 9900 1122"
+    },
+    {
+        "id": 14,
+        "name": "Emma W.",
+        "tower": "B",
+        "unit": "302",
+        "email": "emma.w@email.com",
+        "phone": "+56 9 3344 5566"
+    },
+    {
+        "id": 15,
+        "name": "Fernando S.",
+        "tower": "A",
+        "unit": "501",
+        "email": "fer.s@email.com",
+        "phone": "+56 9 7788 9900"
+    }
+]

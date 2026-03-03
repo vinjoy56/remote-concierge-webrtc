@@ -8,16 +8,25 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2",
     "bcrypt": "^5.1.0",
+    "bcryptjs": "^3.0.3",
+    "express": "^4.18.2",
+    "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.0",
+    "modbus-serial": "^8.0.23",
+    "socket.io": "^4.7.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": ["webrtc", "security", "concierge", "iot", "remote"],
+  "keywords": [
+    "webrtc",
+    "security",
+    "concierge",
+    "iot",
+    "remote"
+  ],
   "author": "Tu Nombre",
   "license": "MIT"
 }

@@ -1,0 +1,462 @@
+{
+    "cameras": {
+        "cam1": {
+            "name": "Conserjeria",
+            "position": {
+                "x": 0,
+                "y": 3,
+                "z": -55
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 12,
+            "zone": "entrance"
+        },
+        "cam2": {
+            "name": "Entrada Torre A",
+            "position": {
+                "x": -25,
+                "y": 3,
+                "z": -10
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 8,
+            "zone": "tower-a"
+        },
+        "cam3": {
+            "name": "Entrada Torre B",
+            "position": {
+                "x": 25,
+                "y": 3,
+                "z": -10
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 8,
+            "zone": "tower-b"
+        },
+        "cam4": {
+            "name": "Entrada Vehicular Principal",
+            "position": {
+                "x": -40,
+                "y": 4,
+                "z": -50
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 15,
+            "zone": "entrance"
+        },
+        "cam5": {
+            "name": "Estacionamiento Panderetas",
+            "position": {
+                "x": -35,
+                "y": 4,
+                "z": 25
+            },
+            "rotation": {
+                "y": 45
+            },
+            "coverageRadius": 12,
+            "zone": "parking"
+        },
+        "cam6": {
+            "name": "Estacionamiento Pandereta 2",
+            "position": {
+                "x": -45,
+                "y": 4,
+                "z": 35
+            },
+            "rotation": {
+                "y": 45
+            },
+            "coverageRadius": 12,
+            "zone": "parking"
+        },
+        "cam7": {
+            "name": "Estacionamiento Visita",
+            "position": {
+                "x": 35,
+                "y": 4,
+                "z": 30
+            },
+            "rotation": {
+                "y": -45
+            },
+            "coverageRadius": 12,
+            "zone": "parking"
+        },
+        "cam8": {
+            "name": "Estacionamiento 89-94",
+            "position": {
+                "x": 45,
+                "y": 4,
+                "z": 20
+            },
+            "rotation": {
+                "y": -90
+            },
+            "coverageRadius": 10,
+            "zone": "parking"
+        },
+        "cam9": {
+            "name": "Ascensor Norte A",
+            "position": {
+                "x": -28,
+                "y": 15,
+                "z": 5
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 4,
+            "zone": "elevators"
+        },
+        "cam10": {
+            "name": "Ascensor Norte B",
+            "position": {
+                "x": 28,
+                "y": 15,
+                "z": 5
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 4,
+            "zone": "elevators"
+        },
+        "cam11": {
+            "name": "Ascensor Sur A",
+            "position": {
+                "x": -28,
+                "y": 15,
+                "z": -5
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 4,
+            "zone": "elevators"
+        },
+        "cam12": {
+            "name": "Ascensor Sur B",
+            "position": {
+                "x": 28,
+                "y": 15,
+                "z": -5
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 4,
+            "zone": "elevators"
+        },
+        "cam13": {
+            "name": "Cocina Torre A",
+            "position": {
+                "x": -32,
+                "y": 3,
+                "z": 8
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 6,
+            "zone": "common"
+        },
+        "cam14": {
+            "name": "Lavanderia",
+            "position": {
+                "x": -20,
+                "y": 2,
+                "z": 35
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 6,
+            "zone": "common"
+        },
+        "cam15": {
+            "name": "Bodega 70-77",
+            "position": {
+                "x": -15,
+                "y": 2,
+                "z": 50
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 8,
+            "zone": "storage"
+        },
+        "cam16": {
+            "name": "Camera 01",
+            "position": {
+                "x": 15,
+                "y": 3,
+                "z": 50
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 8,
+            "zone": "common"
+        },
+        "cam17": {
+            "name": "Sala de Multiuso",
+            "position": {
+                "x": -10,
+                "y": 3,
+                "z": 42
+            },
+            "rotation": {
+                "y": -45
+            },
+            "coverageRadius": 10,
+            "zone": "recreation"
+        },
+        "cam18": {
+            "name": "Sala de Cine",
+            "position": {
+                "x": 5,
+                "y": 3,
+                "z": 48
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 8,
+            "zone": "recreation"
+        },
+        "cam19": {
+            "name": "Piscina",
+            "position": {
+                "x": 0,
+                "y": 4,
+                "z": 45
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 15,
+            "zone": "pool"
+        },
+        "cam20": {
+            "name": "Shaft B",
+            "position": {
+                "x": 32,
+                "y": 10,
+                "z": 0
+            },
+            "rotation": {
+                "y": -90
+            },
+            "coverageRadius": 5,
+            "zone": "technical"
+        },
+        "cam21": {
+            "name": "Sala Bomba Generador",
+            "position": {
+                "x": 45,
+                "y": 3,
+                "z": -35
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 6,
+            "zone": "technical"
+        },
+        "cam22": {
+            "name": "Sala de Bomba",
+            "position": {
+                "x": -50,
+                "y": 4,
+                "z": 40
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 6,
+            "zone": "technical"
+        },
+        "cam23": {
+            "name": "Camera 01 (NVR2)",
+            "position": {
+                "x": 20,
+                "y": 3,
+                "z": -45
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 8,
+            "zone": "common"
+        },
+        "cam24": {
+            "name": "Entrada Vehicular 2",
+            "position": {
+                "x": 40,
+                "y": 4,
+                "z": -50
+            },
+            "rotation": {
+                "y": -90
+            },
+            "coverageRadius": 15,
+            "zone": "entrance"
+        },
+        "cam25": {
+            "name": "Bodega Aseo",
+            "position": {
+                "x": -25,
+                "y": 2,
+                "z": 45
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 5,
+            "zone": "storage"
+        },
+        "cam26": {
+            "name": "Estacionamiento Torre B",
+            "position": {
+                "x": 35,
+                "y": 4,
+                "z": 15
+            },
+            "rotation": {
+                "y": -135
+            },
+            "coverageRadius": 12,
+            "zone": "parking"
+        },
+        "cam27": {
+            "name": "Shaft A",
+            "position": {
+                "x": -32,
+                "y": 10,
+                "z": 0
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 5,
+            "zone": "technical"
+        },
+        "cam28": {
+            "name": "Entrada Peatonal",
+            "position": {
+                "x": -15,
+                "y": 3,
+                "z": -55
+            },
+            "rotation": {
+                "y": 180
+            },
+            "coverageRadius": 10,
+            "zone": "entrance"
+        },
+        "cam29": {
+            "name": "Est. Fondo",
+            "position": {
+                "x": 0,
+                "y": 4,
+                "z": 55
+            },
+            "rotation": {
+                "y": 0
+            },
+            "coverageRadius": 12,
+            "zone": "parking"
+        },
+        "cam30": {
+            "name": "Entrada Ascensor T.B",
+            "position": {
+                "x": 25,
+                "y": 3,
+                "z": 2
+            },
+            "rotation": {
+                "y": -90
+            },
+            "coverageRadius": 6,
+            "zone": "tower-b"
+        },
+        "cam31": {
+            "name": "Bicicletas",
+            "position": {
+                "x": -40,
+                "y": 2,
+                "z": 48
+            },
+            "rotation": {
+                "y": 45
+            },
+            "coverageRadius": 8,
+            "zone": "storage"
+        },
+        "cam32": {
+            "name": "Entrada Ascensor T.A",
+            "position": {
+                "x": -25,
+                "y": 3,
+                "z": 2
+            },
+            "rotation": {
+                "y": 90
+            },
+            "coverageRadius": 6,
+            "zone": "tower-a"
+        }
+    },
+    "zones": {
+        "entrance": {
+            "color": "#3b82f6",
+            "name": "Entradas"
+        },
+        "tower-a": {
+            "color": "#10b981",
+            "name": "Torre A"
+        },
+        "tower-b": {
+            "color": "#8b5cf6",
+            "name": "Torre B"
+        },
+        "parking": {
+            "color": "#f59e0b",
+            "name": "Estacionamientos"
+        },
+        "elevators": {
+            "color": "#ec4899",
+            "name": "Ascensores"
+        },
+        "pool": {
+            "color": "#06b6d4",
+            "name": "Piscina"
+        },
+        "recreation": {
+            "color": "#14b8a6",
+            "name": "Recreación"
+        },
+        "technical": {
+            "color": "#9b59b6",
+            "name": "Técnicas"
+        },
+        "common": {
+            "color": "#64748b",
+            "name": "Comunes"
+        },
+        "storage": {
+            "color": "#78716c",
+            "name": "Bodegas"
+        }
+    }
+}

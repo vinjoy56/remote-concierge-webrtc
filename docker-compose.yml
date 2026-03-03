@@ -1,15 +1,20 @@
 services:
   janus:
-    image: 'meetecho/janus-gateway:latest' # Imagen oficial
+    image: 'canyan/janus-gateway:latest'
     container_name: janus-gateway
     ports:
-      - '8188:8188'          # WebSocket
-      - '8088:8088'          # HTTP
-      - '8089:8089'          # Admin
-      - '8000-8200:8000-8200/udp'  # WebRTC
+      - '8188:8188' # WebSocket
+      - '8088:8088' # HTTP
+      - '8089:8089' # Admin
+      - '8004:8004/udp' # Cam1 RTP
+      - '8006:8006/udp' # Cam2 RTP
+      - '8008:8008/udp' # Cam3 RTP
+      - '8005:8005/udp' # Cam1 RTCP
+      - '8007:8007/udp' # Cam2 RTCP
+      - '8009:8009/udp' # Cam3 RTCP
+      - '20000-20050:20000-20050/udp' # RTP Range
     volumes:
-      - './janus.cfg:/opt/janus/etc/janus/janus.cfg:ro'
-      - './janus.plugin.streaming.cfg:/opt/janus/etc/janus/janus.plugin.streaming.cfg:ro'
-    environment:
-      - JANUS_DEBUG=0
+      - './janus.plugin.streaming.cfg:/usr/local/etc/janus/janus.plugin.streaming.cfg'
+      - './janus.jcfg:/usr/local/etc/janus/janus.jcfg'
+      # Mapa opcional para otros configs si es necesario
     restart: unless-stopped

@@ -1,38 +1,311 @@
 {
   "cameras": {
-    "total": 24,
+    "total": 32,
     "sections": [
       {
         "key": "all",
         "name": "Todas",
-        "range": [1, 24],
+        "range": [
+          1,
+          32
+        ],
         "description": "Todas las cámaras"
       },
       {
-        "key": "entrada",
-        "name": "Entrada",
-        "range": [1, 3],
-        "description": "Cámaras de acceso principal"
+        "key": "digital",
+        "name": "Digitales (IP)",
+        "range": [
+          1,
+          23
+        ],
+        "description": "Cámaras de Alta Definición (IP)"
       },
       {
-        "key": "estacionamiento",
-        "name": "Estacionamiento",
-        "range": [4, 9],
-        "description": "Cámaras del estacionamiento"
-      },
-      {
-        "key": "edificio1",
-        "name": "Edificio 1",
-        "range": [10, 17],
-        "description": "Cámaras del edificio 1"
-      },
-      {
-        "key": "edificio2",
-        "name": "Edificio 2",
-        "range": [18, 24],
-        "description": "Cámaras del edificio 2"
+        "key": "analog",
+        "name": "Análogas",
+        "range": [
+          24,
+          32
+        ],
+        "description": "Cámaras CCTV Convencionales"
       }
-    ]
+    ],
+    "metadata": {
+      "cam1": {
+        "name": "Conserjeria",
+        "logicalId": 36,
+        "streamId": 3602,
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam2": {
+        "name": "Entrada Torre A",
+        "logicalId": 33,
+        "streamId": 3302,
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam3": {
+        "name": "Entrada Torre B",
+        "logicalId": 40,
+        "streamId": 4002,
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam4": {
+        "name": "Entrada Vehicular Principal",
+        "logicalId": 42,
+        "streamId": 4202,
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam5": {
+        "name": "Estacionamiento Panderetas",
+        "logicalId": 34,
+        "streamId": 3402,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam6": {
+        "name": "Estacionamiento Pandereta 2",
+        "logicalId": 41,
+        "streamId": 4102,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam7": {
+        "name": "Estacionamiento Visita",
+        "logicalId": 43,
+        "streamId": 4302,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam8": {
+        "name": "Estacionamiento 89-94",
+        "logicalId": 38,
+        "streamId": 3802,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam9": {
+        "name": "Ascensor Norte A",
+        "logicalId": 49,
+        "streamId": 4902,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam10": {
+        "name": "Ascensor Norte B",
+        "logicalId": 45,
+        "streamId": 4502,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam11": {
+        "name": "Ascensor Sur A",
+        "logicalId": 48,
+        "streamId": 4802,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam12": {
+        "name": "Ascensor Sur B",
+        "logicalId": 46,
+        "streamId": 4602,
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam13": {
+        "name": "Cocina Torre A",
+        "logicalId": 39,
+        "streamId": 3902,
+        "priority": "low",
+        "type": "digital"
+      },
+      "cam14": {
+        "name": "Lavanderia",
+        "logicalId": 37,
+        "streamId": 3702,
+        "priority": "low",
+        "type": "digital"
+      },
+      "cam15": {
+        "name": "Bodega 70-77",
+        "logicalId": 35,
+        "streamId": 3502,
+        "priority": "low",
+        "type": "digital"
+      },
+      "cam16": {
+        "name": "Camera 01",
+        "logicalId": 44,
+        "streamId": 4402,
+        "priority": "low",
+        "type": "digital"
+      },
+      "cam17": {
+        "name": "Sala de Multiuso",
+        "logicalId": 17,
+        "streamId": 1702,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam18": {
+        "name": "Sala de Cine",
+        "logicalId": 18,
+        "streamId": 1802,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam19": {
+        "name": "Piscina",
+        "logicalId": 19,
+        "streamId": 1902,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "digital"
+      },
+      "cam20": {
+        "name": "Shaft B",
+        "logicalId": 20,
+        "streamId": 2002,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam21": {
+        "name": "Sala Bomba Generador",
+        "logicalId": 21,
+        "streamId": 2102,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam22": {
+        "name": "Sala de Bomba",
+        "logicalId": 22,
+        "streamId": 2202,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "digital"
+      },
+      "cam23": {
+        "name": "Camera 01 (NVR2)",
+        "logicalId": 23,
+        "streamId": 2302,
+        "nvrIp": "192.168.0.101",
+        "priority": "low",
+        "type": "digital"
+      },
+      "cam24": {
+        "name": "Entrada Vehicular 2",
+        "logicalId": 2,
+        "streamId": 201,
+        "nvrIp": "192.168.0.101",
+        "priority": "low",
+        "type": "analog"
+      },
+      "cam25": {
+        "name": "Bodega Aseo",
+        "logicalId": 3,
+        "streamId": 301,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "analog"
+      },
+      "cam26": {
+        "name": "Estacionamiento Torre B",
+        "logicalId": 4,
+        "streamId": 401,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "analog"
+      },
+      "cam27": {
+        "name": "Shaft A",
+        "logicalId": 5,
+        "streamId": 501,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "analog"
+      },
+      "cam28": {
+        "name": "Entrada Peatonal",
+        "logicalId": 6,
+        "streamId": 601,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "analog"
+      },
+      "cam29": {
+        "name": "Est. Fondo",
+        "logicalId": 7,
+        "streamId": 701,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "analog"
+      },
+      "cam30": {
+        "name": "Entrada Ascensor T.B",
+        "logicalId": 8,
+        "streamId": 801,
+        "nvrIp": "192.168.0.101",
+        "priority": "low",
+        "type": "analog"
+      },
+      "cam31": {
+        "name": "Bicicletas",
+        "logicalId": 9,
+        "streamId": 901,
+        "nvrIp": "192.168.0.101",
+        "priority": "medium",
+        "type": "analog"
+      },
+      "cam32": {
+        "name": "Entrada Ascensor T.A",
+        "logicalId": 10,
+        "streamId": 1001,
+        "nvrIp": "192.168.0.101",
+        "priority": "high",
+        "type": "analog"
+      }
+    }
+  },
+  "sensors": {
+    "electricFence": {
+      "id": "fence1",
+      "name": "Cerco Eléctrico Perimetral",
+      "voltageMin": 8000,
+      "voltageMax": 12000
+    },
+    "smokeDetectors": {
+      "total": 6,
+      "zones": [
+        "Hall",
+        "Cocina",
+        "Pasillo 1",
+        "Pasillo 2",
+        "Sala Eléctrica",
+        "Bodega"
+      ]
+    },
+    "hydraulic": {
+      "tankCapacityLitres": 5000,
+      "pumpCount": 2
+    },
+    "acDrive": {
+      "model": "PD Series Vector",
+      "maxFrequency": 60,
+      "maxCurrent": 15
+    },
+    "shellyEM": {
+      "id": "shelly-em50",
+      "name": "Medidor Shelly Pro EM-50",
+      "address": "192.168.1.105",
+      "channels": 2
+    }
   },
   "system": {
     "timezone": "America/Santiago",
@@ -46,6 +319,15 @@
     "responseDelayMax": 800,
     "checkInterval": 10000
   },
+  "generator": {
+    "enabled": true,
+    "modbusHost": "127.0.0.1",
+    "modbusPort": 5502,
+    "pollInterval": 2000,
+    "reconnectTimeout": 5000,
+    "alarmsToLog": true,
+    "description": "InteliLite NT AMF 26 P - Master controller for ALL sensors (Generator, Hydraulic, Pool, Climate, Electric, Fence, VFD, Smoke Detectors)"
+  },
   "webrtc": {
     "enabled": true,
     "stunServers": [
@@ -54,29 +336,14 @@
     ],
     "turnServers": [],
     "janus": {
+      "enabled": false,
+      "url": "ws://127.0.0.1:8188/janus",
+      "adminKey": "janusoverlord",
+      "streams": []
+    },
+    "mediamtx": {
       "enabled": true,
-      "url": "ws://localhost:8188/janus",
-      "admin_key": "janusoverlord",
-      "streams": [
-        {
-          "id": "cam1",
-          "name": "Cámara de Prueba Local 1",
-          "janusStreamId": 1,
-          "description": "Stream RTP local en puerto 5004"
-        },
-        {
-          "id": "cam2",
-          "name": "Cámara de Prueba Local 2",
-          "janusStreamId": 2,
-          "description": "Stream RTP local en puerto 5006"
-        },
-        {
-          "id": "cam3",
-          "name": "Cámara de Prueba Local 3",
-          "janusStreamId": 3,
-          "description": "Stream RTP local en puerto 5008"
-        }
-      ]
+      "url": "http://localhost:8889"
     }
   }
 }

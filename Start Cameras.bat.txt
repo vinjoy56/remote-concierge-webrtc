@@ -1,0 +1,32 @@
+@echo off
+:: Script para Windows (Requiere FFMPEG instalado en Windows)
+:: Usa la conexión VPN de Windows para llegar al NVR
+
+SET NVR_IP=192.168.0.100
+SET USER=admin
+SET PASS=j408688271A
+SET JANUS_IP=127.0.0.1
+
+echo ====================================================
+echo Iniciando Streaming FFMPEG (Windows -> Docker Janus)
+echo NVR IP: %NVR_IP% (Via VPN)
+echo Janus: %JANUS_IP%
+echo ====================================================
+
+:: Matar instancias previas
+taskkill /F /IM ffmpeg.exe >nul 2>&1
+
+:: Parametros optimizados
+SET PARAMS=-c:v libx264 -profile:v baseline -tune zerolatency -preset ultrafast -g 30 -an -bsf:v dump_extra -f rtp -payload_type 96
+
+:: Camara 1 -> Puerto 8004
+start "Cam 1" ffmpeg -re -rtsp_transport tcp -i "rtsp://%USER%:%PASS%@%NVR_IP%:554/Streaming/Channels/101" %PARAMS% rtp://%JANUS_IP%:8004?pkt_size=1300
+
+:: Camara 2 -> Puerto 8006
+start "Cam 2" ffmpeg -re -rtsp_transport tcp -i "rtsp://%USER%:%PASS%@%NVR_IP%:554/Streaming/Channels/201" %PARAMS% rtp://%JANUS_IP%:8006?pkt_size=1300
+
+:: Camara 3 -> Puerto 8008
+start "Cam 3" ffmpeg -re -rtsp_transport tcp -i "rtsp://%USER%:%PASS%@%NVR_IP%:554/Streaming/Channels/301" %PARAMS% rtp://%JANUS_IP%:8008?pkt_size=1300
+
+echo Streams iniciados en ventanas separadas.
+pause
